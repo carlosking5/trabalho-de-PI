@@ -19,6 +19,8 @@ O arranque aplica as migrações pendentes e, na primeira execução, cria `src/
 
 Seleciona Filmes, Séries ou Animes no menu. A pesquisa ignora maiúsculas e acentos. O botão de filtros permite escolher género, ano e ordenação. Seleciona um cartão para abrir os detalhes ou adiciona títulos aos favoritos durante a visita. No telemóvel, abre o menu pelo botão junto ao logótipo.
 
+O painel de episódios recentes apresenta as últimas publicações da SQLite. Seleciona um episódio para consultar o título e a numeração da temporada. O navegador guarda a preferência de tema claro ou escuro.
+
 ## Registar e gerir o acesso
 
 No dashboard, seleciona **Iniciar sessão** e depois **Cria uma conta**. O registo público atribui o papel **Utilizador**. A página **A minha conta** apresenta o email e permite terminar a sessão. Cinco tentativas falhadas bloqueiam a entrada na conta durante 15 minutos.
@@ -56,6 +58,6 @@ Os testes xUnit verificam as migrações e a restrição de lugares em SQLite em
 - `CineVerse.Web` contém o dashboard, os recursos locais e a configuração da aplicação.
 - `CineVerse.Tests` contém o teste de integração do catálogo.
 
-A Fase 3 liga o registo e o início de sessão ao ASP.NET Core Identity e protege as páginas de conta e de administração. A confirmação de email, a recuperação de palavra-passe, a edição de perfil, os favoritos persistentes, a reprodução, as reservas, as subscrições e as ferramentas de administração ainda estão pendentes.
+A Fase 4 consolida o dashboard responsivo com secções por tipo de conteúdo, episódios recentes e páginas de ajuda e apresentação. A confirmação de email, a recuperação de palavra-passe, a edição de perfil, os favoritos persistentes, a reprodução, as reservas, as subscrições e as ferramentas de administração ainda estão pendentes.
 
 As seis imagens locais foram criadas com a ferramenta integrada ImageGen a partir de uma folha de contacto com cenas originais: astronauta junto a um eclipse, detetive numa Lisboa chuvosa, expedição na neve, duas mulheres num metro noturno, adolescente numa paisagem rural animada e piloto numa cabine espacial.

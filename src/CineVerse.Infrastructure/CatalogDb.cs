@@ -45,4 +45,18 @@ public sealed class SqliteCatalog(IDbContextFactory<CatalogDb> factory) : ICatal
             .OrderByDescending(title => title.Popularity).ThenBy(title => title.Id)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<EpisodeRelease>> RecentEpisodesAsync(CancellationToken cancellationToken = default)
+    {
+        await using var database = await factory.CreateDbContextAsync(cancellationToken);
+        var now = DateTime.UtcNow;
+        return await (
+            from episode in database.Set<Episode>().AsNoTracking()
+            join season in database.Set<Season>() on episode.SeasonId equals season.Id
+            join title in database.Titles on episode.TitleId equals title.Id
+            where title.IsPublished && episode.PublishedAtUtc <= now
+            orderby episode.PublishedAtUtc descending, episode.Id descending
+            select new EpisodeRelease(title, season.Number, episode.Number, episode.Name, episode.Image)
+        ).Take(4).ToListAsync(cancellationToken);
+    }
 }

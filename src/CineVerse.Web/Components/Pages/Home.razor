@@ -1,82 +1,112 @@
 ﻿@page "/"
 @using CineVerse.Application
 @using CineVerse.Domain
+@using CineVerse.Web.Components.Shared
 @inject ICatalog Catalog
+@inject IJSRuntime JS
+@implements IAsyncDisposable
 
 <PageTitle>CineVerse · Cinema, séries e animes</PageTitle>
 
 <div class="dashboard @(light ? "light" : "")">
     <aside class="sidebar">
-        <a class="brand" href="/" aria-label="CineVerse, início"><span class="brand-mark" aria-hidden="true">▶</span><span>Cine<strong>Verse</strong></span></a>
-        <button class="mobile-menu icon-button" aria-expanded="@menuOpen" aria-label="Menu" @onclick="() => menuOpen = !menuOpen">☰</button>
-        <div class="sidebar-content @(menuOpen ? "open" : "")">
+        <a class="brand" href="/" aria-label="CineVerse, início"><span class="brand-mark"><UiIcon Name="logo" /></span><span>Cine<strong>Verse</strong></span></a>
+        <button class="mobile-menu icon-button" aria-expanded="@menuOpen" aria-controls="dashboard-menu" aria-label="Menu" @onclick="() => menuOpen = !menuOpen"><UiIcon Name="menu" /></button>
+        <div id="dashboard-menu" class="sidebar-content @(menuOpen ? "open" : "")">
             <nav aria-label="Menu principal">
                 <p class="nav-label">Explorar</p>
-                <button class="@NavClass(null)" @onclick="() => Navigate(null)"><span aria-hidden="true">⌂</span> Início</button>
-                <button class="@NavClass(ContentKind.Film)" @onclick="() => Navigate(ContentKind.Film)"><span aria-hidden="true">▣</span> Filmes</button>
-                <button class="@NavClass(ContentKind.Series)" @onclick="() => Navigate(ContentKind.Series)"><span aria-hidden="true">▤</span> Séries</button>
-                <button class="@NavClass(ContentKind.Anime)" @onclick="() => Navigate(ContentKind.Anime)"><span aria-hidden="true">☆</span> Animes</button>
-                <button class="@(savedOnly ? "active" : "")" @onclick="ShowSaved"><span aria-hidden="true">♡</span> Favoritos</button>
+                <button class="@NavClass(null)" aria-pressed="@IsHome" @onclick="() => Navigate(null)"><UiIcon Name="home" /> Início</button>
+                <button class="@NavClass(ContentKind.Film)" aria-pressed="@(kind == ContentKind.Film)" @onclick="() => Navigate(ContentKind.Film)"><UiIcon Name="film" /> Filmes</button>
+                <button class="@NavClass(ContentKind.Series)" aria-pressed="@(kind == ContentKind.Series)" @onclick="() => Navigate(ContentKind.Series)"><UiIcon Name="series" /> Séries</button>
+                <button class="@NavClass(ContentKind.Anime)" aria-pressed="@(kind == ContentKind.Anime)" @onclick="() => Navigate(ContentKind.Anime)"><UiIcon Name="anime" /> Animes</button>
+                <button class="@(savedOnly ? "active" : "")" aria-pressed="@savedOnly" @onclick="ShowSaved"><UiIcon Name="heart" /> Favoritos</button>
             </nav>
             <div class="sidebar-footer">
-                <button class="theme" @onclick="() => light = !light"><span aria-hidden="true">@(light ? "☾" : "☀")</span> @(light ? "Modo escuro" : "Modo claro")</button>
+                <a class="support-link" href="/ajuda"><UiIcon Name="info" /> Ajuda</a>
+                <a class="support-link" href="/sobre"><UiIcon Name="logo" /> Sobre nós</a>
+                <button class="theme" @onclick="ToggleThemeAsync"><UiIcon Name="@(light ? "moon" : "sun")" /> @(light ? "Modo escuro" : "Modo claro")</button>
             </div>
         </div>
     </aside>
 
     <main class="main-content">
         <header class="tools">
-            <label class="search"><span aria-hidden="true">⌕</span><input type="search" aria-label="Pesquisar no catálogo" placeholder="Pesquisar filmes, séries, animes..." @bind="query" @bind:event="oninput" /></label>
-            <button class="icon-button" aria-label="Filtros" aria-expanded="@filterOpen" @onclick="() => filterOpen = !filterOpen">☷</button>
+            <label class="search"><UiIcon Name="search" /><input type="search" aria-label="Pesquisar no catálogo" placeholder="Pesquisar filmes, séries, animes…" @bind="query" @bind:event="oninput" /></label>
+            <button class="icon-button filter-button" aria-label="Filtros" aria-expanded="@filterOpen" aria-controls="catalog-filters" @onclick="() => filterOpen = !filterOpen"><UiIcon Name="filters" /></button>
         </header>
         @if (filterOpen)
         {
-            <div class="filters">
+            <div id="catalog-filters" class="filters">
                 <label>Género <select @bind="genre"><option value="">Todos</option>@foreach (var item in titles.Select(t => t.Genre).Distinct().Order()) { <option>@item</option> }</select></label>
                 <label>Ano <select @bind="year"><option value="">Todos</option>@foreach (var item in titles.Select(t => t.Year).Distinct().OrderDescending()) { <option value="@item">@item</option> }</select></label>
                 <label>Ordenação <select @bind="sort"><option value="">Popularidade</option><option value="score">Classificação</option><option value="year">Mais recentes</option></select></label>
+                <button class="text-button" @onclick="ResetFilters">Limpar filtros</button>
             </div>
         }
         @if (IsHome && titles.Count > 0)
         {
             var featured = titles[slide];
-            <section class="hero" aria-label="Em destaque">
+            <section class="hero" aria-label="Em destaque" @key="featured.Id">
                 <img src="@ImagePath(featured)" alt="" />
                 <div class="hero-copy">
                     <span class="eyebrow">Em destaque</span>
                     <h1>@featured.Name</h1>
                     <p class="hero-meta"><span class="score">★ @Score(featured)</span> <span>@featured.Year</span> <span>@featured.Genre</span></p>
                     <p class="synopsis">@featured.Synopsis</p>
-                    <button class="primary" @onclick="() => selected = featured">Ver detalhes</button>
-                    <button class="hero-save" aria-label="@(saved.Contains(featured.Id) ? "Remover dos favoritos" : "Adicionar aos favoritos")" aria-pressed="@saved.Contains(featured.Id)" @onclick="() => ToggleSaved(featured)">@(saved.Contains(featured.Id) ? "♥" : "♡")</button>
+                    <div class="hero-actions">
+                        <button class="primary" @onclick="() => OpenDetails(featured)">Ver detalhes</button>
+                        <button class="hero-save" aria-label="@(saved.Contains(featured.Id) ? "Remover dos favoritos" : "Adicionar aos favoritos")" aria-pressed="@saved.Contains(featured.Id)" @onclick="() => ToggleSaved(featured)"><UiIcon Name="heart" /></button>
+                    </div>
                 </div>
-                <div class="carousel">
-                    <button class="icon-button" aria-label="Destaque anterior" @onclick="() => Move(-1)">‹</button>
-                    <button class="icon-button" aria-label="Destaque seguinte" @onclick="() => Move(1)">›</button>
-                </div>
+                @if (titles.Count > 1)
+                {
+                    <div class="carousel">
+                        <button class="icon-button" aria-label="Destaque anterior" @onclick="() => Move(-1)"><UiIcon Name="previous" /></button>
+                        <button class="icon-button" aria-label="Destaque seguinte" @onclick="() => Move(1)"><UiIcon Name="next" /></button>
+                    </div>
+                }
             </section>
 
             <section class="catalog-section">
                 <div class="section-heading"><h2>Em tendência</h2><button class="text-button" @onclick="ShowAll">Ver catálogo</button></div>
                 <div class="cards trending">
-                    @foreach (var item in titles.Skip(1).Take(2)) { @Card(item) }
+                    @foreach (var item in titles.Take(3).Where(t => t.Id != featured.Id).Take(2)) { @Card(item) }
                 </div>
             </section>
             <section class="catalog-section">
-                <div class="section-heading"><h2>Populares</h2><button class="text-button" @onclick="ShowAll">Ver todos</button></div>
+                <div class="section-heading"><h2>Mais populares</h2><button class="text-button" @onclick="ShowAll">Ver todos</button></div>
                 <div class="cards">
-                    @foreach (var item in titles.Where(t => t.Id != 2 && t.Id != 3)) { @Card(item) }
+                    @foreach (var item in titles.Take(4)) { @Card(item) }
                 </div>
             </section>
+            @foreach (var category in ContentSections)
+            {
+                var items = titles.Where(t => t.Kind == category.Kind).Take(4).ToArray();
+                if (items.Length == 0) continue;
+                <section class="catalog-section">
+                    <div class="section-heading"><h2>@category.Heading</h2><button class="text-button" @onclick="() => Navigate(category.Kind)">Ver todos</button></div>
+                    <div class="cards">
+                        @foreach (var item in items) { @Card(item) }
+                    </div>
+                </section>
+            }
         }
         else
         {
             <div class="section-heading results"><h1>@Heading</h1></div>
             @if (savedOnly) { <p class="muted">Os favoritos ficam disponíveis durante esta visita.</p> }
-            <div class="cards result-grid">
-                @foreach (var item in Results) { @Card(item) }
-            </div>
-            @if (!Results.Any()) { <p class="muted">Não foram encontrados títulos.</p> }
+            var results = Results.ToArray();
+            <p class="result-count" role="status">@(results.Length == 1 ? "1 título" : $"{results.Length} títulos")</p>
+            @if (results.Length == 0)
+            {
+                <p class="muted">@(savedOnly ? "Ainda não há favoritos nesta seleção." : "Não foram encontrados títulos.")</p>
+            }
+            else
+            {
+                <div class="cards result-grid">
+                    @foreach (var item in results) { @Card(item) }
+                </div>
+            }
         }
     </main>
 
@@ -93,7 +123,7 @@
             <div class="section-heading"><h2>Séries em destaque</h2><button class="text-button" @onclick="() => Navigate(ContentKind.Series)">Ver séries</button></div>
             @foreach (var item in titles.Where(t => t.Kind == ContentKind.Series))
             {
-                <button class="activity-card" @onclick="() => selected = item">
+                <button class="activity-card" @onclick="() => OpenDetails(item)">
                     <img src="@ImagePath(item)" alt="" />
                     <span><strong>@item.Name</strong><small>@item.Episode</small></span>
                 </button>
@@ -101,54 +131,73 @@
         </section>
         <section class="activity-section">
             <div class="section-heading"><h2>Novos episódios</h2></div>
-            @foreach (var item in titles.Where(t => t.Episode is not null).Reverse())
+            @if (releases.Count == 0) { <p class="muted">Ainda não há episódios publicados.</p> }
+            @foreach (var release in releases)
             {
-                <button class="episode" @onclick="() => selected = item">
-                    <img src="@ImagePath(item)" alt="" />
-                    <span><strong>@item.Name</strong><small>@item.Episode</small></span>
-                    <span class="score">@Score(item)</span>
+                <button class="episode" @onclick="() => OpenDetails(release.Title, release)">
+                    <img src="@($"images/{release.Image}")" alt="" loading="lazy" />
+                    <span><strong>@release.Title.Name</strong><small>@EpisodeLabel(release) · @release.Name</small></span>
+                    <span class="score">@Score(release.Title)</span>
                 </button>
             }
         </section>
     </aside>
 
-    @if (selected is { } details)
-    {
-        <div class="overlay" @onclick="() => selected = null">
-            <section class="details" role="dialog" aria-modal="true" aria-labelledby="details-heading" tabindex="0"
-                     @onclick:stopPropagation @onkeydown="CloseOnEscape" @ref="detailsPanel">
+    <dialog class="details" aria-labelledby="details-heading" @ref="detailsPanel">
+        @if (selected is { } details)
+        {
                 <img src="@ImagePath(details)" alt="" />
-                <button class="icon-button close" aria-label="Fechar detalhes" @onclick="() => selected = null">×</button>
+                <form method="dialog"><button type="submit" class="icon-button close" aria-label="Fechar detalhes" autofocus><UiIcon Name="close" /></button></form>
                 <div class="details-copy">
                     <span class="eyebrow">@KindName(details.Kind)</span>
                     <h2 id="details-heading">@details.Name</h2>
-                    <p class="hero-meta"><span class="score">★ @Score(details)</span><span>@details.Year</span><span>@details.Genre</span><span>@details.Episode</span></p>
+                    <p class="hero-meta"><span class="score">★ @Score(details)</span><span>@details.Year</span><span>@details.Genre</span><span>@(selectedEpisode is { } release ? EpisodeLabel(release) : details.Episode)</span></p>
+                    @if (selectedEpisode is { } episode) { <p class="episode-name">@episode.Name</p> }
                     <p>@details.Synopsis</p>
                     <button class="primary" @onclick="() => ToggleSaved(details)">@(saved.Contains(details.Id) ? "Remover dos favoritos" : "Adicionar aos favoritos")</button>
                 </div>
-            </section>
-        </div>
-    }
+        }
+    </dialog>
 </div>
 
 @code {
     private IReadOnlyList<Title> titles = [];
+    private IReadOnlyList<EpisodeRelease> releases = [];
+    private static readonly (ContentKind Kind, string Heading)[] ContentSections =
+    [
+        (ContentKind.Film, "Filmes populares"),
+        (ContentKind.Series, "Séries populares"),
+        (ContentKind.Anime, "Animes populares")
+    ];
     private readonly HashSet<int> saved = [];
     private ContentKind? kind;
     private Title? selected;
+    private EpisodeRelease? selectedEpisode;
     private ElementReference detailsPanel;
-    private Title? focusedTitle;
+    private IJSObjectReference? browser;
     private string query = "", genre = "", year = "", sort = "";
     private int slide;
-    private bool filterOpen, menuOpen, light, all, savedOnly;
+    private bool filterOpen, menuOpen, light, all, savedOnly, openDetails;
 
-    protected override async Task OnInitializedAsync() => titles = await Catalog.ListAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        titles = await Catalog.ListAsync();
+        releases = await Catalog.RecentEpisodesAsync();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (selected == focusedTitle) return;
-        focusedTitle = selected;
-        if (selected is not null) await detailsPanel.FocusAsync();
+        if (firstRender)
+        {
+            browser = await JS.InvokeAsync<IJSObjectReference>("import", "./js/dashboard.js");
+            light = await browser.InvokeAsync<bool>("isLightTheme");
+            if (light) StateHasChanged();
+        }
+        if (openDetails && browser is not null)
+        {
+            openDetails = false;
+            await browser.InvokeVoidAsync("showDetails", detailsPanel);
+        }
     }
 
     private bool IsHome => !all && !savedOnly && kind is null && string.IsNullOrWhiteSpace(query)
@@ -176,7 +225,7 @@
         }
     }
 
-    private RenderFragment Card(Title item) => @<button class="title-card" @onclick="() => selected = item">
+    private RenderFragment Card(Title item) => @<button class="title-card" @onclick="() => OpenDetails(item)">
         <img src="@ImagePath(item)" alt="" loading="lazy" />
         <span class="card-score">★ @Score(item)</span>
         <span class="card-copy"><strong>@item.Name</strong><small>@item.Year · @item.Genre</small></span>
@@ -190,21 +239,40 @@
         ContentKind.Series => "Séries",
         _ => "Animes"
     };
-    private string NavClass(ContentKind? category) => !savedOnly && !all && category == kind ? "active" : "";
+    private string NavClass(ContentKind? category) => (category is null ? IsHome : category == kind) ? "active" : "";
     private void Move(int count) => slide = (slide + count + titles.Count) % titles.Count;
     private void ToggleSaved(Title title)
     {
         if (!saved.Add(title.Id)) saved.Remove(title.Id);
     }
-    private void CloseOnEscape(KeyboardEventArgs args)
+    private void OpenDetails(Title title, EpisodeRelease? episode = null)
     {
-        if (args.Key == "Escape") selected = null;
+        selected = title;
+        selectedEpisode = episode;
+        openDetails = true;
     }
+    private static string EpisodeLabel(EpisodeRelease episode) => $"T{episode.Season:00} · EP{episode.Number:00}";
+
+    private async Task ToggleThemeAsync()
+    {
+        light = !light;
+        if (browser is not null) await browser.InvokeVoidAsync("saveTheme", light);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (browser is null) return;
+        try { await browser.DisposeAsync(); }
+        catch (JSDisconnectedException) { }
+    }
+
+    private void ResetFilters() => genre = year = sort = "";
     private void Navigate(ContentKind? category)
     {
         kind = category;
         all = savedOnly = menuOpen = false;
-        query = genre = year = sort = "";
+        query = "";
+        ResetFilters();
     }
     private void ShowAll() { Navigate(null); all = true; }
     private void ShowSaved() { Navigate(null); savedOnly = true; }
