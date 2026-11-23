@@ -17,6 +17,7 @@ public sealed class CatalogDb(DbContextOptions<CatalogDb> options) : IdentityDbC
         AccountModel.Configure(model);
 
         var titles = model.Entity<Title>();
+        titles.Property(title => title.IsPublished).HasDefaultValue(true);
         titles.HasIndex(title => title.Popularity);
         titles.Property(title => title.Kind).HasConversion<string>();
         titles.HasData(
@@ -40,8 +41,8 @@ public sealed class SqliteCatalog(IDbContextFactory<CatalogDb> factory) : ICatal
     public async Task<IReadOnlyList<Title>> ListAsync(CancellationToken cancellationToken = default)
     {
         await using var database = await factory.CreateDbContextAsync(cancellationToken);
-        return await database.Titles.AsNoTracking().OrderByDescending(title => title.Popularity)
+        return await database.Titles.AsNoTracking().Where(title => title.IsPublished)
+            .OrderByDescending(title => title.Popularity).ThenBy(title => title.Id)
             .ToListAsync(cancellationToken);
     }
 }
-

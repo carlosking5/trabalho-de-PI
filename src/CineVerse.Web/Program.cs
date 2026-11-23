@@ -9,6 +9,7 @@ builder.Services.AddRazorComponents().AddInteractiveServerComponents();
 
 var connection = new SqliteConnectionStringBuilder(builder.Configuration.GetConnectionString("CineVerse")
     ?? "Data Source=cineverse.db");
+connection.ForeignKeys = true;
 if (!Path.IsPathRooted(connection.DataSource))
     connection.DataSource = Path.Combine(builder.Environment.ContentRootPath, connection.DataSource);
 
