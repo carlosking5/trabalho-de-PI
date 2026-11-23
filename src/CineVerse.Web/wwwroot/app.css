@@ -144,3 +144,33 @@ h1, h2, p { margin: 0; }
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { transition: none !important; }
 }
+
+.profile { text-decoration: none; }
+.profile small { overflow-wrap: anywhere; }
+.profile:hover strong { color: var(--link); }
+.account-page {
+    --accent: #ffbd08;
+    width: min(100% - 32px, 460px);
+    margin: clamp(22px, 8vw, 85px) auto;
+    padding: clamp(18px, 5vw, 32px);
+    background: #111827;
+    color: #f8fafc;
+    border: 1px solid #28364a;
+    border-radius: 14px;
+}
+.account-page a { color: #ffd54a; }
+.account-page h1 { margin: 18px 0; font-size: 1.75rem; }
+.account-page form { display: grid; gap: 10px; margin: 16px 0; }
+.account-page input:not([type=checkbox]) {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #44536a;
+    border-radius: 8px;
+    background: #080e1a;
+    color: inherit;
+}
+.account-page button { justify-self: start; margin-top: 6px; }
+.account-page p { overflow-wrap: anywhere; }
+.account-hint { color: #cbd5e1; font-size: .875rem; }
+.account-error, .validation-errors { color: #fca5a5; }
+.remember { display: flex; gap: 8px; align-items: center; }

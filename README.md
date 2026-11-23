@@ -19,6 +19,24 @@ O arranque aplica as migrações pendentes e, na primeira execução, cria `src/
 
 Seleciona Filmes, Séries ou Animes no menu. A pesquisa ignora maiúsculas e acentos. O botão de filtros permite escolher género, ano e ordenação. Seleciona um cartão para abrir os detalhes ou adiciona títulos aos favoritos durante a visita. No telemóvel, abre o menu pelo botão junto ao logótipo.
 
+## Registar e gerir o acesso
+
+No dashboard, seleciona **Iniciar sessão** e depois **Cria uma conta**. O registo público atribui o papel **Utilizador**. A página **A minha conta** apresenta o email e permite terminar a sessão. Cinco tentativas falhadas bloqueiam a entrada na conta durante 15 minutos.
+
+Para criar uma conta **Administrador**, executa o comando abaixo no terminal local do projeto. Usa um email ainda por registar. A opção `-MaskInput` está disponível no PowerShell 7.2 ou posterior.
+
+```powershell
+$env:CINEVERSE_ADMIN_EMAIL = Read-Host 'Email do administrador'
+$env:CINEVERSE_ADMIN_PASSWORD = Read-Host 'Palavra-passe do administrador' -MaskInput
+try {
+    dotnet run --project src/CineVerse.Web --launch-profile http -- --criar-admin
+} finally {
+    Remove-Item Env:CINEVERSE_ADMIN_EMAIL, Env:CINEVERSE_ADMIN_PASSWORD
+}
+```
+
+Se o servidor já estiver a correr no mesmo terminal, termina-o antes com Ctrl+C. Depois de criar a conta, arranca a aplicação normalmente, inicia sessão e abre **Área de administração**. A página verifica o papel no servidor. Em produção, serve a aplicação por HTTPS para que o navegador envie o cookie de sessão.
+
 ## Verificar e gerir migrações
 
 ```powershell
@@ -28,7 +46,7 @@ dotnet tool restore
 dotnet ef migrations list --project src/CineVerse.Infrastructure --startup-project src/CineVerse.Web
 ```
 
-Os testes xUnit usam SQLite em memória e verificam a criação do catálogo, a atualização da base de dados da Fase 1 e a rejeição de duas atribuições do mesmo lugar na mesma sessão.
+Os testes xUnit verificam as migrações e a restrição de lugares em SQLite em memória. Os testes HTTP usam bases SQLite temporárias e verificam registo, login, logout, proteção antifalsificação, bloqueio por tentativas falhadas e acesso por papel.
 
 ## Estrutura e estado
 
@@ -38,6 +56,6 @@ Os testes xUnit usam SQLite em memória e verificam a criação do catálogo, a 
 - `CineVerse.Web` contém o dashboard, os recursos locais e a configuração da aplicação.
 - `CineVerse.Tests` contém o teste de integração do catálogo.
 
-A Fase 2 acrescenta as tabelas do ASP.NET Core Identity, géneros, temporadas, episódios, histórico de reprodução, reservas, bilhetes, subscrições e auditoria. O dashboard continua a usar o catálogo demonstrativo e os favoritos duram enquanto a ligação Blazor se mantém. A Fase 3 liga o registo e o início de sessão às tabelas Identity e protege as páginas com papéis. A reprodução, os serviços de reserva e bilhética, as subscrições e a administração são etapas posteriores.
+A Fase 3 liga o registo e o início de sessão ao ASP.NET Core Identity e protege as páginas de conta e de administração. A confirmação de email, a recuperação de palavra-passe, a edição de perfil, os favoritos persistentes, a reprodução, as reservas, as subscrições e as ferramentas de administração ainda estão pendentes.
 
 As seis imagens locais foram criadas com a ferramenta integrada ImageGen a partir de uma folha de contacto com cenas originais: astronauta junto a um eclipse, detetive numa Lisboa chuvosa, expedição na neve, duas mulheres num metro noturno, adolescente numa paisagem rural animada e piloto numa cabine espacial.

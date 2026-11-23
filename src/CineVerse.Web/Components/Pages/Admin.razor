@@ -1,0 +1,12 @@
+﻿@page "/administracao"
+@attribute [Authorize(Roles = Accounts.Admin)]
+@attribute [ExcludeFromInteractiveRouting]
+@using CineVerse.Web.Identity
+
+<PageTitle>Administração · CineVerse</PageTitle>
+<main class="account-page">
+    <a href="/">CineVerse</a>
+    <h1>Administração</h1>
+    <p>Sessão de administrador iniciada.</p>
+    <a href="/conta">A minha conta</a>
+</main>

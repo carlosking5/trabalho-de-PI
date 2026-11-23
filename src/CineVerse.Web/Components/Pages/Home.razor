@@ -81,7 +81,14 @@
     </main>
 
     <aside class="activity" aria-label="Atividade">
-        <div class="profile"><span class="avatar" aria-hidden="true">CV</span><div><strong>Olá, cinéfilo</strong><small>Catálogo de demonstração</small></div></div>
+        <AuthorizeView>
+            <Authorized>
+                <a class="profile" href="/conta"><span class="avatar" aria-hidden="true">CV</span><span><strong>A minha conta</strong><small>@context.User.FindFirst(System.Security.Claims.ClaimTypes.Email)?.Value</small></span></a>
+            </Authorized>
+            <NotAuthorized>
+                <a class="profile" href="/conta/entrar"><span class="avatar" aria-hidden="true">CV</span><span><strong>Iniciar sessão</strong><small>Entra na tua conta CineVerse</small></span></a>
+            </NotAuthorized>
+        </AuthorizeView>
         <section class="activity-section">
             <div class="section-heading"><h2>Séries em destaque</h2><button class="text-button" @onclick="() => Navigate(ContentKind.Series)">Ver séries</button></div>
             @foreach (var item in titles.Where(t => t.Kind == ContentKind.Series))
