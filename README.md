@@ -64,6 +64,11 @@ CineReserva/
 
 ## Notas técnicas
 
-- A base de dados é criada com `EnsureCreated()` (simples, sem migrações). Se alterar os modelos, apague o `cinema.db` para ser recriado.
+- A base de dados usa **migrations** (pasta `Data/Migrations`), aplicadas automaticamente ao arrancar (`Migrate()`).
+  Para alterar os modelos: `dotnet tool restore` (uma vez) e depois, na raiz do repositório,
+  `dotnet ef migrations add NomeDaAlteracao --project CineReserva --output-dir Data/Migrations`.
+- Bases criadas pela primeira versão (com `EnsureCreated`) são reconhecidas e atualizadas sem perder dados.
+- **Séries**: têm Temporada, Episódio inicial e Episódio final (NULL nos filmes). Cada sessão exibe no máximo
+  3 episódios e um bilhete dá acesso a todos. Validação no servidor (`FilmeFormViewModel.ErrosSerie`) e no browser (`site.js`).
 - O Bootstrap e os ícones são carregados por CDN, por isso é preciso ligação à internet para o visual aparecer.
 - Os cartazes carregados ficam em `wwwroot/imagens/` com um nome único (GUID).

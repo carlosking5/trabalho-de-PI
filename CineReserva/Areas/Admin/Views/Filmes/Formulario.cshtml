@@ -61,6 +61,30 @@
                         <span asp-validation-for="Classificacao" class="text-danger small"></span>
                     </div>
 
+                    <!-- Campos só para SÉRIES: o site.js mostra/esconde conforme o Tipo, sem recarregar a página -->
+                    <div id="camposSerie" data-max-episodios="@Filme.MaxEpisodiosPorSessao" class="col-12 @(Model.Tipo == TipoConteudo.Serie ? "" : "d-none")">
+                        <div class="row g-3 p-3 rounded border border-warning-subtle mx-0">
+                            <div class="col-12 small text-dourado">
+                                <i class="bi bi-collection-play"></i> Episódios desta sessão (máximo @Filme.MaxEpisodiosPorSessao). Um bilhete dá acesso a todos.
+                            </div>
+                            <div class="col-4">
+                                <label asp-for="Temporada" class="form-label"></label>
+                                <input asp-for="Temporada" type="number" min="1" class="form-control" data-serie />
+                                <span asp-validation-for="Temporada" class="text-danger small"></span>
+                            </div>
+                            <div class="col-4">
+                                <label asp-for="EpisodioInicial" class="form-label"></label>
+                                <input asp-for="EpisodioInicial" type="number" min="1" class="form-control" data-serie />
+                                <span asp-validation-for="EpisodioInicial" class="text-danger small"></span>
+                            </div>
+                            <div class="col-4">
+                                <label asp-for="EpisodioFinal" class="form-label"></label>
+                                <input asp-for="EpisodioFinal" type="number" min="1" class="form-control" data-serie />
+                                <span asp-validation-for="EpisodioFinal" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Campos para ESCREVER -->
                     <div class="col-12">
                         <label asp-for="Sinopse" class="form-label"></label>

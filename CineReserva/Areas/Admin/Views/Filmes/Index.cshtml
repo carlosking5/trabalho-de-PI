@@ -34,7 +34,13 @@ else
                 {
                     <tr>
                         <td><img src="@f.CartazOuPadrao" alt="" class="miniatura" /></td>
-                        <td class="fw-semibold">@f.Titulo</td>
+                        <td>
+                            <div class="fw-semibold">@f.Titulo</div>
+                            @if (f.DescricaoEpisodios is string episodios)
+                            {
+                                <div class="small text-dourado">@episodios</div>
+                            }
+                        </td>
                         <td>@f.Tipo.Nome()</td>
                         <td>@f.Categoria?.Nome</td>
                         <td>@f.Sessoes.Count</td>

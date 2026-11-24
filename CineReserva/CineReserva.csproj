@@ -9,6 +9,10 @@
 
   <ItemGroup>
     <!-- Base de dados: Entity Framework Core com SQLite (ficheiro cinema.db) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.*">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.*" />
     <!-- Login e perfis (Administrador / Cliente) guardados na mesma base de dados -->
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.*" />

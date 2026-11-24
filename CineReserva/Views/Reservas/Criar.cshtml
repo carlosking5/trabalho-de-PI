@@ -16,6 +16,10 @@
             <div>
                 <h2 class="h4 fw-bold mb-1">@filme.Titulo</h2>
                 <div class="small text-secondary mb-2">@filme.Categoria?.Nome · @filme.Duracao.Duracao() · @filme.Classificacao</div>
+                @if (filme.DescricaoEpisodios is string episodios)
+                {
+                    <div><i class="bi bi-collection-play text-dourado"></i> @episodios <span class="small text-secondary">(um bilhete dá acesso a todos)</span></div>
+                }
                 <div><i class="bi bi-calendar-event text-dourado"></i> <span class="text-capitalize">@s.DataHora.ToString("dddd, dd 'de' MMMM 'às' HH:mm")</span></div>
                 <div><i class="bi bi-cash text-dourado"></i> @s.Preco.Euros() por bilhete</div>
                 <div><i class="bi bi-people text-dourado"></i> @s.LugaresRestantes lugares restantes</div>

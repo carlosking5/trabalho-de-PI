@@ -107,7 +107,10 @@ public class FilmesController : Controller
             Sinopse = filme.Sinopse,
             Duracao = filme.Duracao,
             LinkTrailer = filme.LinkTrailer,
-            CartazAtual = filme.Cartaz
+            CartazAtual = filme.Cartaz,
+            Temporada = filme.Temporada,
+            EpisodioInicial = filme.EpisodioInicial,
+            EpisodioFinal = filme.EpisodioFinal
         };
 
         await PreencherListas();
@@ -174,6 +177,12 @@ public class FilmesController : Controller
         filme.Sinopse = vm.Sinopse.Trim();
         filme.Duracao = vm.Duracao!.Value;
         filme.LinkTrailer = string.IsNullOrWhiteSpace(vm.LinkTrailer) ? null : vm.LinkTrailer.Trim();
+
+        // Temporada e episódios só existem nas séries; nos filmes ficam NULL
+        var serie = vm.Tipo == TipoConteudo.Serie;
+        filme.Temporada = serie ? vm.Temporada : null;
+        filme.EpisodioInicial = serie ? vm.EpisodioInicial : null;
+        filme.EpisodioFinal = serie ? vm.EpisodioFinal : null;
     }
 
     private async Task ValidarCategoriaECartaz(FilmeFormViewModel vm)
@@ -183,6 +192,10 @@ public class FilmesController : Controller
 
         if (!Filme.Classificacoes.Contains(vm.Classificacao))
             ModelState.AddModelError(nameof(vm.Classificacao), "Classificação inválida.");
+
+        // Séries: temporada e episódios obrigatórios, final >= inicial, máximo 3 por sessão
+        foreach (var (campo, mensagem) in vm.ErrosSerie())
+            ModelState.AddModelError(campo, mensagem);
 
         if (vm.FicheiroCartaz is { Length: > 0 })
         {

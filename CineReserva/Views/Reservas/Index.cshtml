@@ -28,6 +28,10 @@
                             <h2 class="h5 fw-bold mb-1">@s.Filme.Titulo</h2>
                             <span class="badge bg-@(r.Estado.Cor())">@r.Estado.Nome()</span>
                         </div>
+                        @if (s.Filme.DescricaoEpisodios is string episodios)
+                        {
+                            <div class="small"><i class="bi bi-collection-play text-dourado"></i> @episodios</div>
+                        }
                         <div class="small"><i class="bi bi-calendar-event text-dourado"></i> @s.DataHora.DiaHora()</div>
                         <div class="small"><i class="bi bi-ticket-perforated text-dourado"></i> @r.Quantidade bilhete(s) · @r.Total.Euros()</div>
                         <div class="mt-2">

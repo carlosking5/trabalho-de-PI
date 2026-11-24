@@ -17,6 +17,10 @@
         <div class="info">
             <h3 class="titulo">@Model.Filme.Titulo</h3>
             <div class="categoria">@Model.Filme.Categoria?.Nome · @Model.Filme.Tipo.Nome()</div>
+            @if (Model.Filme.DescricaoEpisodios is string episodios)
+            {
+                <div class="episodios"><i class="bi bi-collection-play"></i> @episodios</div>
+            }
             <div class="d-flex justify-content-between align-items-center mt-1">
                 <span class="data">
                     @if (Model.ProximaSessao is not null)

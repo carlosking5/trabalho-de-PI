@@ -17,6 +17,11 @@
         <div class="col-12 col-md-8 col-lg-9">
             <div class="text-dourado small text-uppercase fw-bold">@filme.Tipo.Nome()</div>
             <h1 class="fw-bold">@filme.Titulo</h1>
+            @if (filme.DescricaoEpisodios is string episodios)
+            {
+                <div class="h5 text-dourado mb-1"><i class="bi bi-collection-play"></i> @episodios</div>
+                <div class="small text-secondary">Um bilhete dá acesso a todos os episódios da sessão.</div>
+            }
 
             <div class="ficha my-3">
                 <span><i class="bi bi-tag"></i> @filme.Categoria?.Nome</span>

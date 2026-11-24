@@ -13,6 +13,10 @@
 
     <div class="painel text-start mt-4">
         <h2 class="h5 fw-bold">@s.Filme!.Titulo</h2>
+        @if (s.Filme.DescricaoEpisodios is string episodios)
+        {
+            <div><i class="bi bi-collection-play text-dourado"></i> @episodios</div>
+        }
         <div><i class="bi bi-calendar-event text-dourado"></i> <span class="text-capitalize">@s.DataHora.ToString("dddd, dd 'de' MMMM 'às' HH:mm")</span></div>
         <div><i class="bi bi-ticket-perforated text-dourado"></i> @Model.Quantidade bilhete(s)</div>
         <div><i class="bi bi-cash text-dourado"></i> Total: <strong>@Model.Total.Euros()</strong></div>

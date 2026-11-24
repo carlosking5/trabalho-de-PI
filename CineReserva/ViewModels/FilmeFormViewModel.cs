@@ -42,6 +42,38 @@ public class FilmeFormViewModel : IValidatableObject
     [Required(ErrorMessage = "Escolha a classificação etária.")]
     public string Classificacao { get; set; } = "Todos";
 
+    // ----- Só para séries (aparecem com JavaScript quando o Tipo é "Série") -----
+    [Display(Name = "Temporada")]
+    public int? Temporada { get; set; }
+
+    [Display(Name = "Episódio inicial")]
+    public int? EpisodioInicial { get; set; }
+
+    [Display(Name = "Episódio final")]
+    public int? EpisodioFinal { get; set; }
+
+    // Regras das séries. É chamado pelo controller para correr SEMPRE,
+    // mesmo que haja outros erros no formulário.
+    public IEnumerable<(string Campo, string Mensagem)> ErrosSerie()
+    {
+        if (Tipo != TipoConteudo.Serie) yield break; // nos filmes estes campos não são obrigatórios
+
+        if (Temporada is null || Temporada < 1)
+            yield return (nameof(Temporada), "Indique a temporada (número maior que 0).");
+        if (EpisodioInicial is null || EpisodioInicial < 1)
+            yield return (nameof(EpisodioInicial), "Indique o episódio inicial (número maior que 0).");
+        if (EpisodioFinal is null || EpisodioFinal < 1)
+            yield return (nameof(EpisodioFinal), "Indique o episódio final (número maior que 0).");
+
+        if (EpisodioInicial >= 1 && EpisodioFinal >= 1)
+        {
+            if (EpisodioFinal < EpisodioInicial)
+                yield return (nameof(EpisodioFinal), "O episódio final tem de ser maior ou igual ao inicial.");
+            else if (EpisodioFinal - EpisodioInicial + 1 > Filme.MaxEpisodiosPorSessao)
+                yield return (nameof(EpisodioFinal), "Uma sessão pode ter no máximo 3 episódios.");
+        }
+    }
+
     // ----- Cartaz -----
     [Display(Name = "Cartaz")]
     public IFormFile? FicheiroCartaz { get; set; }

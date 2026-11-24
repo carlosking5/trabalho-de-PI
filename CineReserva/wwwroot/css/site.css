@@ -148,6 +148,7 @@ h1, h2, h3, .logo {
 }
 .cartao-filme .categoria { font-size: .8rem; color: #9b968e; }
 .cartao-filme .data { font-size: .75rem; color: #bdb8b0; }
+.cartao-filme .episodios { font-size: .75rem; color: var(--cine-dourado); }
 .cartao-filme .preco { font-weight: 700; color: var(--cine-dourado); }
 
 .etiqueta {
