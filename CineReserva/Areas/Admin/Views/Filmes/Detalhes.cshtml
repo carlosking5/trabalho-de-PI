@@ -1,0 +1,55 @@
+@model Filme
+@{
+    ViewData["Title"] = Model.Titulo;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 fw-bold mb-0">@Model.Titulo</h1>
+    <div class="d-flex gap-2">
+        <a asp-action="Editar" asp-route-id="@Model.Id" class="btn btn-outline-light"><i class="bi bi-pencil"></i> Editar</a>
+        <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12 col-md-3">
+        <img src="@Model.CartazOuPadrao" alt="Cartaz" class="cartaz-grande" />
+    </div>
+    <div class="col-12 col-md-9">
+        <div class="painel mb-3">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Tipo</dt><dd class="col-sm-9">@Model.Tipo.Nome()</dd>
+                <dt class="col-sm-3">Categoria</dt><dd class="col-sm-9">@Model.Categoria?.Nome</dd>
+                <dt class="col-sm-3">Duração</dt><dd class="col-sm-9">@Model.Duracao minutos</dd>
+                <dt class="col-sm-3">Classificação</dt><dd class="col-sm-9">@Model.Classificacao</dd>
+                <dt class="col-sm-3">Trailer</dt>
+                <dd class="col-sm-9">
+                    @if (string.IsNullOrEmpty(Model.LinkTrailer)) { <span class="text-secondary">—</span> }
+                    else { <a href="@Model.LinkTrailer" target="_blank" rel="noopener noreferrer">@Model.LinkTrailer</a> }
+                </dd>
+                <dt class="col-sm-3">Sinopse</dt><dd class="col-sm-9" style="white-space: pre-line">@Model.Sinopse</dd>
+            </dl>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <h2 class="h5 fw-bold mb-0">Sessões</h2>
+            <a asp-controller="Sessoes" asp-action="Criar" asp-route-filmeId="@Model.Id" class="btn btn-sm btn-cinema"><i class="bi bi-plus-lg"></i> Nova sessão</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table align-middle">
+                <thead><tr><th>Data/hora</th><th>Preço</th><th>Lotação</th><th>Vendidos</th></tr></thead>
+                <tbody>
+                    @foreach (var s in Model.Sessoes.OrderBy(s => s.DataHora))
+                    {
+                        <tr class="@(s.JaPassou ? "text-secondary" : "")">
+                            <td>@s.DataHora.DiaHora() @(s.JaPassou ? "(passada)" : "")</td>
+                            <td>@s.Preco.Euros()</td>
+                            <td>@s.Lotacao</td>
+                            <td>@s.BilhetesVendidos @if (s.Esgotada) { <span class="badge bg-danger ms-1">Esgotado</span> }</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

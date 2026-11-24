@@ -1,0 +1,28 @@
+@model CatalogoViewModel
+@* Barra de filtros: pesquisa por nome, categoria e Filme/Série. Envia para /Filmes (método GET) *@
+<form asp-controller="Filmes" asp-action="Index" method="get" class="filtros row g-2 align-items-end">
+    <div class="col-12 col-md-5">
+        <label class="form-label small text-secondary" for="pesquisa">Pesquisar</label>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="search" id="pesquisa" name="pesquisa" value="@Model.Pesquisa" class="form-control" placeholder="Nome do filme ou série..." />
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <label class="form-label small text-secondary" for="categoriaId">Categoria</label>
+        <select id="categoriaId" name="categoriaId" class="form-select"
+                asp-items="@(new SelectList(Model.Categorias, "Id", "Nome", Model.CategoriaId))">
+            <option value="">Todas</option>
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <label class="form-label small text-secondary" for="tipo">Tipo</label>
+        <select id="tipo" name="tipo" class="form-select"
+                asp-items="@(Enum.GetValues<TipoConteudo>().Select(t => new SelectListItem(t.Nome(), t.ToString(), t == Model.Tipo)))">
+            <option value="">Todos</option>
+        </select>
+    </div>
+    <div class="col-12 col-md-2 d-grid">
+        <button type="submit" class="btn btn-cinema"><i class="bi bi-funnel"></i> Filtrar</button>
+    </div>
+</form>

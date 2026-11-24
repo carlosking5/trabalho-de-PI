@@ -1,0 +1,26 @@
+@model Reserva
+@{
+    ViewData["Title"] = "Reserva confirmada";
+    var s = Model.Sessao!;
+}
+
+<div class="container py-5 text-center" style="max-width: 640px">
+    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem"></i>
+    <h1 class="fw-bold mt-2">Reserva confirmada!</h1>
+    <p class="text-secondary">Mostre este código à entrada da sala.</p>
+
+    <div class="codigo-reserva my-3">@Model.Codigo</div>
+
+    <div class="painel text-start mt-4">
+        <h2 class="h5 fw-bold">@s.Filme!.Titulo</h2>
+        <div><i class="bi bi-calendar-event text-dourado"></i> <span class="text-capitalize">@s.DataHora.ToString("dddd, dd 'de' MMMM 'às' HH:mm")</span></div>
+        <div><i class="bi bi-ticket-perforated text-dourado"></i> @Model.Quantidade bilhete(s)</div>
+        <div><i class="bi bi-cash text-dourado"></i> Total: <strong>@Model.Total.Euros()</strong></div>
+        <div class="small text-secondary mt-2">Lugares livres: sente-se onde quiser.</div>
+    </div>
+
+    <div class="d-flex justify-content-center gap-2 mt-4">
+        <a asp-action="Index" class="btn btn-dourado">Ver Minhas Reservas</a>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-light">Voltar ao início</a>
+    </div>
+</div>

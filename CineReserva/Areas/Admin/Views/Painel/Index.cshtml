@@ -1,0 +1,73 @@
+@model PainelViewModel
+@{
+    ViewData["Title"] = "Painel";
+}
+
+<h1 class="h3 fw-bold mb-4">Painel</h1>
+
+<!-- Cartões com os números principais -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-xl-3">
+        <div class="cartao-estatistica d-flex justify-content-between align-items-center">
+            <div>
+                <div class="rotulo">Bilhetes vendidos hoje</div>
+                <div class="valor">@Model.BilhetesHoje</div>
+            </div>
+            <i class="bi bi-ticket-perforated text-vermelho"></i>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="cartao-estatistica dourado d-flex justify-content-between align-items-center">
+            <div>
+                <div class="rotulo">Total faturado</div>
+                <div class="valor">@Model.TotalFaturado.Euros()</div>
+            </div>
+            <i class="bi bi-cash-stack text-dourado"></i>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="cartao-estatistica d-flex justify-content-between align-items-center">
+            <div>
+                <div class="rotulo">Sessões de hoje</div>
+                <div class="valor">@Model.SessoesHoje</div>
+            </div>
+            <i class="bi bi-calendar-check text-vermelho"></i>
+        </div>
+    </div>
+    <div class="col-6 col-xl-3">
+        <div class="cartao-estatistica dourado d-flex justify-content-between align-items-center">
+            <div>
+                <div class="rotulo">Filmes em cartaz</div>
+                <div class="valor">@Model.FilmesEmCartaz</div>
+            </div>
+            <i class="bi bi-camera-reels text-dourado"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Próximas sessões com barra de ocupação -->
+<div class="painel">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 fw-bold mb-0">Próximas sessões</h2>
+        <a asp-controller="Sessoes" asp-action="Index" class="small">Ver todas</a>
+    </div>
+
+    @if (Model.ProximasSessoes.Count == 0)
+    {
+        <p class="text-secondary mb-0">Não há sessões marcadas.</p>
+    }
+
+    @foreach (var s in Model.ProximasSessoes)
+    {
+        var cor = s.Ocupacao >= 100 ? "bg-danger" : s.Ocupacao >= 75 ? "bg-warning" : "bg-success";
+        <div class="py-2 border-bottom border-secondary-subtle">
+            <div class="d-flex justify-content-between flex-wrap small mb-1">
+                <span><strong>@s.Filme!.Titulo</strong> · @s.DataHora.DiaHora()</span>
+                <span class="text-secondary">@s.BilhetesVendidos / @s.Lotacao bilhetes (@s.Ocupacao%)</span>
+            </div>
+            <div class="progress" role="progressbar" aria-label="Ocupação" aria-valuenow="@s.Ocupacao" aria-valuemin="0" aria-valuemax="100" style="height: 8px">
+                <div class="progress-bar @cor" style="width: @(s.Ocupacao)%"></div>
+            </div>
+        </div>
+    }
+</div>

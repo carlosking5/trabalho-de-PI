@@ -1,0 +1,80 @@
+@model FilmeCartao
+@{
+    var filme = Model.Filme;
+    ViewData["Title"] = filme.Titulo;
+}
+
+<div class="container py-4">
+    <partial name="_Mensagens" />
+
+    <div class="row g-4">
+        <!-- Cartaz grande -->
+        <div class="col-12 col-md-4 col-lg-3">
+            <img src="@filme.CartazOuPadrao" alt="Cartaz de @filme.Titulo" class="cartaz-grande" />
+        </div>
+
+        <!-- Informação -->
+        <div class="col-12 col-md-8 col-lg-9">
+            <div class="text-dourado small text-uppercase fw-bold">@filme.Tipo.Nome()</div>
+            <h1 class="fw-bold">@filme.Titulo</h1>
+
+            <div class="ficha my-3">
+                <span><i class="bi bi-tag"></i> @filme.Categoria?.Nome</span>
+                <span><i class="bi bi-clock"></i> @filme.Duracao.Duracao()</span>
+                <span><i class="bi bi-person-badge"></i> @filme.Classificacao</span>
+            </div>
+
+            <h2 class="h5 text-dourado">Sinopse</h2>
+            <p style="white-space: pre-line">@filme.Sinopse</p>
+
+            @if (!string.IsNullOrEmpty(filme.LinkTrailer))
+            {
+                <!-- target="_blank" abre o YouTube numa nova aba -->
+                <a href="@filme.LinkTrailer" target="_blank" rel="noopener noreferrer" class="btn btn-outline-light">
+                    <i class="bi bi-youtube text-vermelho"></i> Ver trailer
+                </a>
+            }
+
+            <!-- Lista de sessões -->
+            <h2 class="titulo-seccao mt-5">Sessões</h2>
+
+            @if (Model.SessoesFuturas.Count == 0)
+            {
+                <p class="text-secondary">Ainda não há sessões marcadas para este filme.</p>
+            }
+
+            <div class="d-flex flex-column gap-2">
+                @foreach (var s in Model.SessoesFuturas)
+                {
+                    <div class="sessao-linha d-flex flex-wrap align-items-center gap-3">
+                        <div class="me-auto">
+                            <div class="fw-bold text-capitalize">@s.DataHora.ToString("dddd, dd 'de' MMMM")</div>
+                            <div class="small text-secondary"><i class="bi bi-clock"></i> @s.DataHora.ToString("HH:mm")</div>
+                        </div>
+                        <div class="text-dourado fw-bold">@s.Preco.Euros()</div>
+                        <div class="small" style="min-width: 130px">
+                            @if (s.Esgotada)
+                            {
+                                <span class="badge bg-danger">Esgotado</span>
+                            }
+                            else
+                            {
+                                <span><i class="bi bi-people"></i> @s.LugaresRestantes lugares restantes</span>
+                            }
+                        </div>
+                        @if (s.Esgotada)
+                        {
+                            <button class="btn btn-secondary" disabled>Esgotado</button>
+                        }
+                        else
+                        {
+                            <a class="btn btn-cinema" asp-controller="Reservas" asp-action="Criar" asp-route-sessaoId="@s.Id">
+                                <i class="bi bi-ticket-perforated"></i> Reservar
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

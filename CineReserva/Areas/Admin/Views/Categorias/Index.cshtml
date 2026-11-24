@@ -1,0 +1,37 @@
+@model List<Categoria>
+@{
+    ViewData["Title"] = "Categorias";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 fw-bold mb-0">Categorias</h1>
+    <a asp-action="Criar" class="btn btn-cinema"><i class="bi bi-plus-lg"></i> Nova categoria</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Filmes</th>
+                <th class="text-end">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in Model)
+            {
+                <tr>
+                    <td>@c.Nome</td>
+                    <td>@c.Filmes.Count</td>
+                    <td class="text-end text-nowrap">
+                        <a asp-action="Editar" asp-route-id="@c.Id" class="btn btn-sm btn-outline-light" title="Editar"><i class="bi bi-pencil"></i> Editar</a>
+                        <form asp-action="Apagar" asp-route-id="@c.Id" method="post" class="d-inline"
+                              data-confirmar="Apagar a categoria &quot;@c.Nome&quot;?">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Apagar"><i class="bi bi-trash"></i> Apagar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

@@ -1,0 +1,75 @@
+@model InicioViewModel
+@{
+    ViewData["Title"] = "Início";
+    var destaque = Model.Destaque;
+}
+
+<!-- Banner grande com o filme em destaque -->
+@if (destaque is not null)
+{
+    <section class="banner" style="background-image: url('@destaque.Filme.CartazOuPadrao')">
+        <div class="container">
+            <div class="destaque"><i class="bi bi-star-fill"></i> Em destaque</div>
+            <h1>@destaque.Filme.Titulo</h1>
+            <div class="ficha mb-2">
+                <span>@destaque.Filme.Categoria?.Nome</span>
+                <span>@destaque.Filme.Duracao.Duracao()</span>
+                <span>@destaque.Filme.Classificacao</span>
+                @if (destaque.ProximaDisponivel is not null)
+                {
+                    <span><i class="bi bi-calendar-event"></i> @destaque.ProximaDisponivel.DataHora.DiaHora()</span>
+                }
+            </div>
+            <p class="d-none d-md-block">@destaque.Filme.Sinopse</p>
+            <a class="btn btn-cinema btn-lg" asp-controller="Filmes" asp-action="Detalhes" asp-route-id="@destaque.Filme.Id">
+                <i class="bi bi-ticket-perforated"></i> Reservar agora
+            </a>
+        </div>
+    </section>
+}
+else
+{
+    <section class="banner banner-vazio">
+        <div class="container">
+            <div class="destaque">Bem-vindo ao CineReserva</div>
+            <h1>A magia do cinema começa aqui</h1>
+            <p>Ainda não há sessões em cartaz. Volte em breve!</p>
+        </div>
+    </section>
+}
+
+<div class="container mt-4">
+    <partial name="_Mensagens" />
+
+    <!-- Filtros (enviam para a página Filmes) -->
+    <partial name="_FiltrosCatalogo" model="new CatalogoViewModel { Categorias = Model.Categorias }" />
+
+    <!-- Em cartaz -->
+    <section class="mt-5">
+        <h2 class="titulo-seccao">Em cartaz</h2>
+        @if (Model.EmCartaz.Count == 0)
+        {
+            <p class="text-secondary">Não há filmes em cartaz nos próximos dias.</p>
+        }
+        <div class="row g-3">
+            @foreach (var cartao in Model.EmCartaz)
+            {
+                <partial name="_CartaoFilme" model="cartao" />
+            }
+        </div>
+    </section>
+
+    <!-- Brevemente -->
+    @if (Model.Brevemente.Count > 0)
+    {
+        <section class="mt-5">
+            <h2 class="titulo-seccao">Brevemente</h2>
+            <div class="row g-3">
+                @foreach (var cartao in Model.Brevemente)
+                {
+                    <partial name="_CartaoFilme" model="cartao" />
+                }
+            </div>
+        </section>
+    }
+</div>

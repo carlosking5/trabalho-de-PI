@@ -1,0 +1,49 @@
+@model List<Reserva>
+@{
+    ViewData["Title"] = "Minhas Reservas";
+}
+
+<div class="container py-4">
+    <h1 class="titulo-seccao">Minhas Reservas</h1>
+    <partial name="_Mensagens" />
+
+    @if (Model.Count == 0)
+    {
+        <div class="painel text-center py-5">
+            <i class="bi bi-ticket-perforated text-secondary" style="font-size: 3rem"></i>
+            <p class="mt-2">Ainda não fez nenhuma reserva.</p>
+            <a asp-controller="Filmes" asp-action="Index" class="btn btn-cinema">Ver filmes</a>
+        </div>
+    }
+
+    <div class="row g-3">
+        @foreach (var r in Model)
+        {
+            var s = r.Sessao!;
+            <div class="col-12 col-lg-6">
+                <div class="painel d-flex gap-3 h-100">
+                    <img src="@s.Filme!.CartazOuPadrao" alt="" class="rounded" style="width: 80px; aspect-ratio: 2/3; object-fit: cover" />
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h2 class="h5 fw-bold mb-1">@s.Filme.Titulo</h2>
+                            <span class="badge bg-@(r.Estado.Cor())">@r.Estado.Nome()</span>
+                        </div>
+                        <div class="small"><i class="bi bi-calendar-event text-dourado"></i> @s.DataHora.DiaHora()</div>
+                        <div class="small"><i class="bi bi-ticket-perforated text-dourado"></i> @r.Quantidade bilhete(s) · @r.Total.Euros()</div>
+                        <div class="mt-2">
+                            Código: <span class="fw-bold text-dourado" style="letter-spacing: .15em; font-family: Consolas, monospace">@r.Codigo</span>
+                        </div>
+
+                        @if (r.Estado == EstadoReserva.Ativa && !s.JaPassou)
+                        {
+                            <form asp-action="Cancelar" asp-route-id="@r.Id" method="post" class="mt-2"
+                                  data-confirmar="Tem a certeza que quer cancelar esta reserva?">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">Cancelar reserva</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

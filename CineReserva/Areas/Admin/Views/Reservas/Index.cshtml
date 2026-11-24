@@ -1,0 +1,69 @@
+@model ReservasAdminViewModel
+@{
+    ViewData["Title"] = "Reservas";
+}
+
+<h1 class="h3 fw-bold mb-3">Reservas</h1>
+
+<!-- Filtros por filme e por data da sessão -->
+<form asp-action="Index" method="get" class="filtros row g-2 align-items-end mb-3">
+    <div class="col-12 col-md-5">
+        <label class="form-label small text-secondary" for="filmeId">Filme</label>
+        <select id="filmeId" name="filmeId" class="form-select"
+                asp-items="@(new SelectList(Model.Filmes, "Id", "Titulo", Model.FilmeId))">
+            <option value="">Todos os filmes</option>
+        </select>
+    </div>
+    <div class="col-7 col-md-4">
+        <label class="form-label small text-secondary" for="data">Data da sessão</label>
+        <input type="date" id="data" name="data" class="form-control" value="@(Model.Data?.ToString("yyyy-MM-dd"))" />
+    </div>
+    <div class="col-5 col-md-3 d-flex gap-2">
+        <button type="submit" class="btn btn-cinema flex-grow-1"><i class="bi bi-funnel"></i> Filtrar</button>
+        <a asp-action="Index" class="btn btn-outline-secondary" title="Limpar filtros"><i class="bi bi-x-lg"></i></a>
+    </div>
+</form>
+
+<p class="small text-secondary">
+    @Model.Reservas.Count reserva(s) ·
+    @Model.Reservas.Where(r => r.Estado != EstadoReserva.Cancelada).Sum(r => r.Quantidade) bilhete(s) válidos
+</p>
+
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Cliente</th>
+                <th>Filme</th>
+                <th>Sessão</th>
+                <th>Qtd.</th>
+                <th>Total</th>
+                <th>Reservado em</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.Reservas)
+            {
+                <tr>
+                    <td class="fw-bold text-dourado" style="font-family: Consolas, monospace">@r.Codigo</td>
+                    <td>
+                        <div>@r.Utilizador?.Nome</div>
+                        <div class="small text-secondary">@r.Utilizador?.Email</div>
+                    </td>
+                    <td>@r.Sessao!.Filme!.Titulo</td>
+                    <td class="text-nowrap">@r.Sessao.DataHora.DiaHora()</td>
+                    <td>@r.Quantidade</td>
+                    <td class="text-nowrap">@r.Total.Euros()</td>
+                    <td class="text-nowrap small">@r.DataReserva.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td><span class="badge bg-@(r.Estado.Cor())">@r.Estado.Nome()</span></td>
+                </tr>
+            }
+            @if (Model.Reservas.Count == 0)
+            {
+                <tr><td colspan="8" class="text-center text-secondary py-4">Nenhuma reserva encontrada.</td></tr>
+            }
+        </tbody>
+    </table>
+</div>

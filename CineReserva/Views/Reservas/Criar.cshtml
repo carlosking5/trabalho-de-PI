@@ -1,0 +1,59 @@
+@model CriarReservaViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Reservar";
+    var s = Model.Sessao!;
+    var filme = s.Filme!;
+}
+
+<div class="container py-4" style="max-width: 820px">
+    <h1 class="titulo-seccao">Reservar bilhetes</h1>
+
+    <div class="painel">
+        <!-- Resumo da sessão -->
+        <div class="d-flex gap-3">
+            <img src="@filme.CartazOuPadrao" alt="" class="rounded" style="width: 100px; aspect-ratio: 2/3; object-fit: cover" />
+            <div>
+                <h2 class="h4 fw-bold mb-1">@filme.Titulo</h2>
+                <div class="small text-secondary mb-2">@filme.Categoria?.Nome · @filme.Duracao.Duracao() · @filme.Classificacao</div>
+                <div><i class="bi bi-calendar-event text-dourado"></i> <span class="text-capitalize">@s.DataHora.ToString("dddd, dd 'de' MMMM 'às' HH:mm")</span></div>
+                <div><i class="bi bi-cash text-dourado"></i> @s.Preco.Euros() por bilhete</div>
+                <div><i class="bi bi-people text-dourado"></i> @s.LugaresRestantes lugares restantes</div>
+            </div>
+        </div>
+
+        <div class="alert alert-secondary small mt-3 mb-0">
+            <i class="bi bi-info-circle"></i> Os lugares não são marcados: com o seu bilhete pode sentar-se onde quiser na sala.
+        </div>
+
+        <hr />
+
+        <form asp-action="Criar" method="post">
+            <input type="hidden" asp-for="SessaoId" />
+            <div asp-validation-summary="All" class="text-danger small"></div>
+
+            <div class="row align-items-center g-3">
+                <div class="col-12 col-sm-6">
+                    <label class="form-label d-block">Quantidade de bilhetes</label>
+                    <!-- O JavaScript (site.js) usa data-preco e data-maximo para calcular o total -->
+                    <div class="quantidade" data-quantidade
+                         data-preco="@s.Preco.ToString(CultureInfo.InvariantCulture)"
+                         data-maximo="@s.LugaresRestantes">
+                        <button type="button" class="btn btn-outline-light" data-menos aria-label="Menos um bilhete">−</button>
+                        <input asp-for="Quantidade" type="number" min="1" max="@s.LugaresRestantes" class="form-control" />
+                        <button type="button" class="btn btn-outline-light" data-mais aria-label="Mais um bilhete">+</button>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-6 text-sm-end">
+                    <div class="text-secondary small">Total a pagar</div>
+                    <div class="total" id="total">@((Model.Quantidade * s.Preco).Euros())</div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between mt-4">
+                <a asp-controller="Filmes" asp-action="Detalhes" asp-route-id="@filme.Id" class="btn btn-outline-secondary">Voltar</a>
+                <button type="submit" class="btn btn-cinema btn-lg"><i class="bi bi-check2-circle"></i> Confirmar reserva</button>
+            </div>
+        </form>
+    </div>
+</div>

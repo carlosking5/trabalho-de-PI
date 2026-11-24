@@ -1,0 +1,53 @@
+@{
+    var controlador = ViewContext.RouteData.Values["controller"]?.ToString();
+    string Ativo(string nome) => controlador == nome ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="pt" data-bs-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] · Administração · CineReserva</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="d-lg-flex">
+
+        <!-- Menu lateral escuro -->
+        <aside class="admin-sidebar p-3 d-flex flex-column">
+            <a class="logo text-decoration-none mb-1" asp-area="Admin" asp-controller="Painel" asp-action="Index">
+                <i class="bi bi-film"></i> Cine<span>Reserva</span>
+            </a>
+            <div class="small text-secondary mb-3">Administração</div>
+
+            <nav class="nav flex-column flex-grow-1">
+                <a class="nav-link @Ativo("Painel")" asp-area="Admin" asp-controller="Painel" asp-action="Index"><i class="bi bi-speedometer2"></i> Painel</a>
+                <a class="nav-link @Ativo("Categorias")" asp-area="Admin" asp-controller="Categorias" asp-action="Index"><i class="bi bi-tags"></i> Categorias</a>
+                <a class="nav-link @Ativo("Filmes")" asp-area="Admin" asp-controller="Filmes" asp-action="Index"><i class="bi bi-camera-reels"></i> Filmes</a>
+                <a class="nav-link @Ativo("Sessoes")" asp-area="Admin" asp-controller="Sessoes" asp-action="Index"><i class="bi bi-calendar-week"></i> Sessões</a>
+                <a class="nav-link @Ativo("Reservas")" asp-area="Admin" asp-controller="Reservas" asp-action="Index"><i class="bi bi-ticket-perforated"></i> Reservas</a>
+                <a class="nav-link @Ativo("Validar")" asp-area="Admin" asp-controller="Validar" asp-action="Index"><i class="bi bi-qr-code-scan"></i> Validar Entrada</a>
+                <a class="nav-link @Ativo("Relatorios")" asp-area="Admin" asp-controller="Relatorios" asp-action="Index"><i class="bi bi-bar-chart-line"></i> Relatórios</a>
+
+                <hr class="border-secondary" />
+                <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index"><i class="bi bi-globe"></i> Ver site</a>
+                <form asp-area="" asp-controller="Conta" asp-action="Sair" method="post">
+                    <button type="submit" class="nav-link w-100 text-start border-0 bg-transparent"><i class="bi bi-box-arrow-right"></i> Sair</button>
+                </form>
+            </nav>
+        </aside>
+
+        <!-- Conteúdo da página -->
+        <main class="admin-conteudo p-3 p-lg-4">
+            <partial name="_Mensagens" />
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

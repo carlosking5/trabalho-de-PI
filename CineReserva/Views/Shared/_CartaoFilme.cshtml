@@ -1,0 +1,38 @@
+@model FilmeCartao
+@* Um cartaz da grelha: imagem, título, categoria, data, preço e etiqueta "Esgotado" *@
+<div class="col-6 col-md-4 col-lg-3">
+    <a asp-controller="Filmes" asp-action="Detalhes" asp-route-id="@Model.Filme.Id" class="cartao-filme">
+        <div class="cartaz">
+            <img src="@Model.Filme.CartazOuPadrao" alt="Cartaz de @Model.Filme.Titulo" loading="lazy" />
+            @if (Model.Esgotado)
+            {
+                <span class="etiqueta etiqueta-esgotado">Esgotado</span>
+            }
+            else if (Model.Brevemente)
+            {
+                <span class="etiqueta etiqueta-brevemente">Brevemente</span>
+            }
+            <span class="classificacao">@Model.Filme.Classificacao</span>
+        </div>
+        <div class="info">
+            <h3 class="titulo">@Model.Filme.Titulo</h3>
+            <div class="categoria">@Model.Filme.Categoria?.Nome · @Model.Filme.Tipo.Nome()</div>
+            <div class="d-flex justify-content-between align-items-center mt-1">
+                <span class="data">
+                    @if (Model.ProximaSessao is not null)
+                    {
+                        <i class="bi bi-calendar-event"></i> @Model.ProximaSessao.DataHora.DiaHora()
+                    }
+                    else
+                    {
+                        <span>Datas em breve</span>
+                    }
+                </span>
+                @if (Model.Preco is not null)
+                {
+                    <span class="preco">@Model.Preco.Value.Euros()</span>
+                }
+            </div>
+        </div>
+    </a>
+</div>

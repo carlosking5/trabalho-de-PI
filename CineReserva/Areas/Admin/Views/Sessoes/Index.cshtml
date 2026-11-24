@@ -1,0 +1,64 @@
+@model List<Sessao>
+@{
+    ViewData["Title"] = "Sessões";
+    var passadas = (bool)ViewBag.Passadas;
+}
+
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+    <h1 class="h3 fw-bold mb-0">Sessões</h1>
+    <div class="d-flex gap-2">
+        <div class="btn-group">
+            <a asp-action="Index" class="btn btn-outline-light @(passadas ? "" : "active")">Próximas</a>
+            <a asp-action="Index" asp-route-passadas="true" class="btn btn-outline-light @(passadas ? "active" : "")">Passadas</a>
+        </div>
+        <a asp-action="Criar" class="btn btn-cinema"><i class="bi bi-plus-lg"></i> Nova sessão</a>
+    </div>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="painel text-center py-4 text-secondary">Não há sessões para mostrar.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Filme</th>
+                    <th>Data/hora</th>
+                    <th>Preço</th>
+                    <th>Lotação</th>
+                    <th>Bilhetes vendidos</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@s.Filme!.Titulo</td>
+                        <td>@s.DataHora.DiaHora()</td>
+                        <td>@s.Preco.Euros()</td>
+                        <td>@s.Lotacao</td>
+                        <td style="min-width: 160px">
+                            <div class="small">@s.BilhetesVendidos / @s.Lotacao
+                                @if (s.Esgotada) { <span class="badge bg-danger ms-1">Esgotado</span> }
+                            </div>
+                            <div class="progress" style="height: 6px">
+                                <div class="progress-bar @(s.Esgotada ? "bg-danger" : "bg-success")" style="width: @(s.Ocupacao)%"></div>
+                            </div>
+                        </td>
+                        <td class="text-end text-nowrap">
+                            <a asp-action="Editar" asp-route-id="@s.Id" class="btn btn-sm btn-outline-light" title="Editar"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Apagar" asp-route-id="@s.Id" method="post" class="d-inline"
+                                  data-confirmar="Apagar esta sessão? As @s.BilhetesVendidos reserva(s) de bilhetes também serão apagadas.">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Apagar"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

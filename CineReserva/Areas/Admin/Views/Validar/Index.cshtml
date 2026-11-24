@@ -1,0 +1,48 @@
+@model ValidarEntradaViewModel
+@{
+    ViewData["Title"] = "Validar Entrada";
+}
+
+<h1 class="h3 fw-bold mb-3">Validar Entrada</h1>
+
+<div style="max-width: 640px">
+    <div class="painel mb-3">
+        <form asp-action="Index" method="post">
+            <label for="codigo" class="form-label">Código da reserva</label>
+            <div class="input-group input-group-lg">
+                <input type="text" id="codigo" name="codigo" class="form-control text-uppercase"
+                       style="letter-spacing: .2em; font-family: Consolas, monospace"
+                       maxlength="8" placeholder="EX: K7P2QX9M" autocomplete="off" autofocus />
+                <button type="submit" class="btn btn-cinema"><i class="bi bi-check2-circle"></i> Validar</button>
+            </div>
+        </form>
+    </div>
+
+    @if (Model.Valido is not null)
+    {
+        <!-- Verde se válida, vermelho se inválida ou já usada -->
+        <div class="p-4 @(Model.Valido == true ? "resultado-valido" : "resultado-invalido")">
+            <div class="d-flex align-items-center gap-3">
+                <i class="bi @(Model.Valido == true ? "bi-check-circle-fill text-success" : "bi-x-circle-fill text-danger")" style="font-size: 3rem"></i>
+                <div>
+                    <div class="h4 fw-bold mb-1">@(Model.Valido == true ? "VÁLIDA" : "INVÁLIDA")</div>
+                    <div>@Model.Mensagem</div>
+                </div>
+            </div>
+
+            @if (Model.Reserva is not null)
+            {
+                var r = Model.Reserva;
+                <hr />
+                <dl class="row mb-0 small">
+                    <dt class="col-4">Código</dt><dd class="col-8" style="font-family: Consolas, monospace">@r.Codigo</dd>
+                    <dt class="col-4">Filme</dt><dd class="col-8">@r.Sessao!.Filme!.Titulo</dd>
+                    <dt class="col-4">Sessão</dt><dd class="col-8">@r.Sessao.DataHora.DiaHora()</dd>
+                    <dt class="col-4">Bilhetes</dt><dd class="col-8">@r.Quantidade</dd>
+                    <dt class="col-4">Cliente</dt><dd class="col-8">@r.Utilizador?.Nome (@r.Utilizador?.Email)</dd>
+                    <dt class="col-4">Estado</dt><dd class="col-8"><span class="badge bg-@(r.Estado.Cor())">@r.Estado.Nome()</span></dd>
+                </dl>
+            }
+        </div>
+    }
+</div>

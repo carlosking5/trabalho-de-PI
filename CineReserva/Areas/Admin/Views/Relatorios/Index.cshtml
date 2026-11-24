@@ -1,0 +1,90 @@
+@model RelatoriosViewModel
+@{
+    ViewData["Title"] = "Relatórios";
+    var maxDia = Model.VendasPorDia.Count == 0 ? 1 : Math.Max(1, Model.VendasPorDia.Max(l => l.Bilhetes));
+    var maxFilme = Model.VendasPorFilme.Count == 0 ? 1 : Math.Max(1, Model.VendasPorFilme.Max(l => l.Bilhetes));
+}
+
+<h1 class="h3 fw-bold mb-4">Relatórios</h1>
+
+<div class="row g-3 mb-4">
+    <div class="col-12 col-md-4">
+        <div class="cartao-estatistica dourado h-100">
+            <div class="rotulo"><i class="bi bi-trophy text-dourado" style="font-size: 1rem; opacity: 1"></i> Filme mais visto</div>
+            @if (Model.FilmeMaisVisto is not null)
+            {
+                <div class="valor" style="font-size: 1.4rem">@Model.FilmeMaisVisto.Nome</div>
+                <div class="small text-secondary">@Model.FilmeMaisVisto.Bilhetes bilhetes · @Model.FilmeMaisVisto.Faturado.Euros()</div>
+            }
+            else
+            {
+                <div class="text-secondary mt-2">Ainda sem vendas.</div>
+            }
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="cartao-estatistica h-100">
+            <div class="rotulo">Total de bilhetes</div>
+            <div class="valor">@Model.TotalBilhetes</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-4">
+        <div class="cartao-estatistica dourado h-100">
+            <div class="rotulo">Total faturado</div>
+            <div class="valor">@Model.TotalFaturado.Euros()</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Vendas por filme -->
+    <div class="col-12 col-xl-6">
+        <div class="painel h-100">
+            <h2 class="h5 fw-bold mb-3">Vendas por filme</h2>
+            @if (Model.VendasPorFilme.Count == 0) { <p class="text-secondary mb-0">Sem dados.</p> }
+            @foreach (var l in Model.VendasPorFilme)
+            {
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between small">
+                        <span class="fw-semibold">@l.Nome</span>
+                        <span>@l.Bilhetes bilhetes · <span class="text-dourado">@l.Faturado.Euros()</span></span>
+                    </div>
+                    <div class="progress" style="height: 10px">
+                        <div class="progress-bar bg-danger" style="width: @((l.Bilhetes * 100 / maxFilme))%"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Vendas por dia -->
+    <div class="col-12 col-xl-6">
+        <div class="painel h-100">
+            <h2 class="h5 fw-bold mb-3">Vendas por dia <span class="small text-secondary fw-normal">(últimos 30 dias com vendas)</span></h2>
+            @if (Model.VendasPorDia.Count == 0) { <p class="text-secondary mb-0">Sem dados.</p> }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle mb-0">
+                        <thead><tr><th>Dia</th><th>Bilhetes</th><th style="width: 40%"></th><th class="text-end">Faturado</th></tr></thead>
+                        <tbody>
+                            @foreach (var l in Model.VendasPorDia)
+                            {
+                                <tr>
+                                    <td>@l.Nome</td>
+                                    <td>@l.Bilhetes</td>
+                                    <td>
+                                        <div class="progress" style="height: 8px">
+                                            <div class="progress-bar" style="width: @((l.Bilhetes * 100 / maxDia))%; background: var(--cine-dourado)"></div>
+                                        </div>
+                                    </td>
+                                    <td class="text-end">@l.Faturado.Euros()</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

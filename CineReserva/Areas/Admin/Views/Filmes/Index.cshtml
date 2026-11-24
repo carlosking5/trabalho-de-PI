@@ -1,0 +1,54 @@
+@model List<Filme>
+@{
+    ViewData["Title"] = "Filmes";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 fw-bold mb-0">Filmes</h1>
+    <a asp-action="Criar" class="btn btn-cinema"><i class="bi bi-plus-lg"></i> Adicionar filme</a>
+</div>
+
+@if (Model.Count == 0)
+{
+    <div class="painel text-center py-5">
+        <p class="mb-2">Ainda não há filmes.</p>
+        <a asp-action="Criar" class="btn btn-cinema">Adicionar o primeiro filme</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Cartaz</th>
+                    <th>Título</th>
+                    <th>Tipo</th>
+                    <th>Categoria</th>
+                    <th>Sessões</th>
+                    <th class="text-end">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var f in Model)
+                {
+                    <tr>
+                        <td><img src="@f.CartazOuPadrao" alt="" class="miniatura" /></td>
+                        <td class="fw-semibold">@f.Titulo</td>
+                        <td>@f.Tipo.Nome()</td>
+                        <td>@f.Categoria?.Nome</td>
+                        <td>@f.Sessoes.Count</td>
+                        <td class="text-end text-nowrap">
+                            <a asp-action="Detalhes" asp-route-id="@f.Id" class="btn btn-sm btn-outline-light" title="Ver"><i class="bi bi-eye"></i></a>
+                            <a asp-action="Editar" asp-route-id="@f.Id" class="btn btn-sm btn-outline-light" title="Editar"><i class="bi bi-pencil"></i></a>
+                            <form asp-action="Apagar" asp-route-id="@f.Id" method="post" class="d-inline"
+                                  data-confirmar="Apagar &quot;@f.Titulo&quot;? As sessões e reservas deste filme também serão apagadas.">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="Apagar"><i class="bi bi-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
