@@ -1,5 +1,5 @@
 @model FilmeCartao
-@* Um cartaz da grelha: imagem, título, categoria, data, preço e etiqueta "Esgotado" *@
+@* Um cartaz da grelha: imagem, título, categorias, data, preço e etiqueta "Esgotado" *@
 <div class="col-6 col-md-4 col-lg-3">
     <a asp-controller="Filmes" asp-action="Detalhes" asp-route-id="@Model.Filme.Id" class="cartao-filme">
         <div class="cartaz">
@@ -16,7 +16,7 @@
         </div>
         <div class="info">
             <h3 class="titulo">@Model.Filme.Titulo</h3>
-            <div class="categoria">@Model.Filme.Categoria?.Nome · @Model.Filme.Tipo.Nome()</div>
+            <div class="categoria">@Model.Filme.NomesCategorias · @Model.Filme.Tipo.Nome()</div>
             @if (Model.Filme.DescricaoEpisodios is string episodios)
             {
                 <div class="episodios"><i class="bi bi-collection-play"></i> @episodios</div>

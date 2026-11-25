@@ -15,7 +15,7 @@
             <img src="@filme.CartazOuPadrao" alt="" class="rounded" style="width: 100px; aspect-ratio: 2/3; object-fit: cover" />
             <div>
                 <h2 class="h4 fw-bold mb-1">@filme.Titulo</h2>
-                <div class="small text-secondary mb-2">@filme.Categoria?.Nome · @filme.Duracao.Duracao() · @filme.Classificacao</div>
+                <div class="small text-secondary mb-2">@filme.NomesCategorias · @filme.Duracao.Duracao() · @filme.Classificacao</div>
                 @if (filme.DescricaoEpisodios is string episodios)
                 {
                     <div><i class="bi bi-collection-play text-dourado"></i> @episodios <span class="small text-secondary">(um bilhete dá acesso a todos)</span></div>

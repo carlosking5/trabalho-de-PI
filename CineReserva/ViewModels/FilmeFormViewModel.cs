@@ -34,9 +34,9 @@ public class FilmeFormViewModel : IValidatableObject
     [Display(Name = "Tipo")]
     public TipoConteudo Tipo { get; set; }
 
-    [Display(Name = "Categoria")]
-    [Required(ErrorMessage = "Escolha uma categoria.")]
-    public int? CategoriaId { get; set; }
+    // Ids das caixas de seleção marcadas (pode escolher várias categorias)
+    [Display(Name = "Categorias")]
+    public List<int> CategoriaIds { get; set; } = new();
 
     [Display(Name = "Classificação etária")]
     [Required(ErrorMessage = "Escolha a classificação etária.")]

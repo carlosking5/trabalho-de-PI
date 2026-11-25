@@ -12,7 +12,7 @@
             <div class="destaque"><i class="bi bi-star-fill"></i> Em destaque</div>
             <h1>@destaque.Filme.Titulo</h1>
             <div class="ficha mb-2">
-                <span>@destaque.Filme.Categoria?.Nome</span>
+                <span>@destaque.Filme.NomesCategorias</span>
                 <span>@destaque.Filme.Duracao.Duracao()</span>
                 <span>@destaque.Filme.Classificacao</span>
                 @if (destaque.ProximaDisponivel is not null)

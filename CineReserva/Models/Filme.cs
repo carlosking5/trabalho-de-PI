@@ -22,8 +22,11 @@ public class Filme
 
     public TipoConteudo Tipo { get; set; }
 
-    public int CategoriaId { get; set; }
-    public Categoria? Categoria { get; set; }
+    // Um filme/série pode ter várias categorias (relação N para N, tabela "FilmeCategorias")
+    public List<Categoria> Categorias { get; set; } = new();
+
+    // "Ação, Comédia" — para mostrar nas páginas (é preciso ter feito Include(f => f.Categorias))
+    public string NomesCategorias => string.Join(", ", Categorias.Select(c => c.Nome).Order());
 
     // Caminho da imagem dentro de wwwroot, por exemplo "/imagens/abc123.jpg"
     [StringLength(300)]

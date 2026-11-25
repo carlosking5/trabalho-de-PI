@@ -144,7 +144,7 @@ public class ReservasController : Controller
     // ----- Funções auxiliares -----
 
     private Task<Sessao?> CarregarSessao(int id) => _db.Sessoes
-        .Include(s => s.Filme).ThenInclude(f => f!.Categoria)
+        .Include(s => s.Filme).ThenInclude(f => f!.Categorias)
         .Include(s => s.Reservas)
         .FirstOrDefaultAsync(s => s.Id == id);
 

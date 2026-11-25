@@ -16,7 +16,7 @@ public class HomeController : Controller
     {
         var filmes = await _db.Filmes
             .AsNoTracking()
-            .Include(f => f.Categoria)
+            .Include(f => f.Categorias)
             .Include(f => f.Sessoes).ThenInclude(s => s.Reservas)
             .ToListAsync();
 

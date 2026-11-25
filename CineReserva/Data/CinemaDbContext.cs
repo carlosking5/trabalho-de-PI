@@ -22,12 +22,17 @@ public class CinemaDbContext : IdentityDbContext<Utilizador>
         // Não deixa haver duas categorias com o mesmo nome
         builder.Entity<Categoria>().HasIndex(c => c.Nome).IsUnique();
 
-        // Não se pode apagar uma categoria que ainda tenha filmes
+        // Filmes <-> Categorias (N para N). O EF usa a tabela de ligação "FilmeCategorias"
+        // com as colunas FilmeId e CategoriaId (a chave primária é o par das duas).
+        // Apagar um filme apaga as suas ligações; uma categoria com filmes não se pode apagar (Restrict).
         builder.Entity<Filme>()
-            .HasOne(f => f.Categoria)
+            .HasMany(f => f.Categorias)
             .WithMany(c => c.Filmes)
-            .HasForeignKey(f => f.CategoriaId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .UsingEntity<Dictionary<string, object>>(
+                "FilmeCategorias",
+                ligacao => ligacao.HasOne<Categoria>().WithMany().HasForeignKey("CategoriaId").OnDelete(DeleteBehavior.Restrict),
+                ligacao => ligacao.HasOne<Filme>().WithMany().HasForeignKey("FilmeId").OnDelete(DeleteBehavior.Cascade),
+                ligacao => ligacao.HasKey("FilmeId", "CategoriaId"));
 
         // Apagar um filme apaga as suas sessões
         builder.Entity<Sessao>()

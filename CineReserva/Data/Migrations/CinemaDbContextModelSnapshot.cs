@@ -46,9 +46,6 @@ namespace CineReserva.Data.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("CategoriaId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("Classificacao")
                         .IsRequired()
                         .HasMaxLength(10)
@@ -84,8 +81,6 @@ namespace CineReserva.Data.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CategoriaId");
 
                     b.ToTable("Filmes");
                 });
@@ -223,6 +218,21 @@ namespace CineReserva.Data.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("FilmeCategorias", b =>
+                {
+                    b.Property<int>("FilmeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CategoriaId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("FilmeId", "CategoriaId");
+
+                    b.HasIndex("CategoriaId");
+
+                    b.ToTable("FilmeCategorias");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -351,17 +361,6 @@ namespace CineReserva.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("CineReserva.Models.Filme", b =>
-                {
-                    b.HasOne("CineReserva.Models.Categoria", "Categoria")
-                        .WithMany("Filmes")
-                        .HasForeignKey("CategoriaId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Categoria");
-                });
-
             modelBuilder.Entity("CineReserva.Models.Reserva", b =>
                 {
                     b.HasOne("CineReserva.Models.Sessao", "Sessao")
@@ -390,6 +389,21 @@ namespace CineReserva.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Filme");
+                });
+
+            modelBuilder.Entity("FilmeCategorias", b =>
+                {
+                    b.HasOne("CineReserva.Models.Categoria", null)
+                        .WithMany()
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("CineReserva.Models.Filme", null)
+                        .WithMany()
+                        .HasForeignKey("FilmeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -441,11 +455,6 @@ namespace CineReserva.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("CineReserva.Models.Categoria", b =>
-                {
-                    b.Navigation("Filmes");
                 });
 
             modelBuilder.Entity("CineReserva.Models.Filme", b =>

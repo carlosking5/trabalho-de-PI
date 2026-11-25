@@ -44,22 +44,33 @@
                     </div>
 
                     <!-- Listas para SELECIONAR -->
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-6">
                         <label asp-for="Tipo" class="form-label"></label>
                         <select asp-for="Tipo" asp-items="ViewBag.Tipos" class="form-select"></select>
                     </div>
-                    <div class="col-12 col-md-4">
-                        <label asp-for="CategoriaId" class="form-label"></label>
-                        <select asp-for="CategoriaId" asp-items="ViewBag.Categorias" class="form-select">
-                            <option value="">— Escolha —</option>
-                        </select>
-                        <span asp-validation-for="CategoriaId" class="text-danger small"></span>
-                    </div>
-                    <div class="col-12 col-md-4">
+                    <div class="col-12 col-md-6">
                         <label asp-for="Classificacao" class="form-label"></label>
                         <select asp-for="Classificacao" asp-items="ViewBag.Classificacoes" class="form-select"></select>
                         <span asp-validation-for="Classificacao" class="text-danger small"></span>
                     </div>
+
+                    <!-- Caixas de seleção: pode marcar várias categorias.
+                         Todas usam name="CategoriaIds", por isso chegam ao controller como uma lista. -->
+                    <fieldset class="col-12">
+                        <legend class="form-label fs-6 mb-2">Categorias <span class="small text-secondary">(escolha uma ou mais)</span></legend>
+                        <div class="d-flex flex-wrap gap-3">
+                            @foreach (var categoria in (List<Categoria>)ViewBag.Categorias)
+                            {
+                                var idCaixa = $"categoria-{categoria.Id}";
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="CategoriaIds" value="@categoria.Id" id="@idCaixa"
+                                           checked="@Model.CategoriaIds.Contains(categoria.Id)" />
+                                    <label class="form-check-label" for="@idCaixa">@categoria.Nome</label>
+                                </div>
+                            }
+                        </div>
+                        <span asp-validation-for="CategoriaIds" class="text-danger small"></span>
+                    </fieldset>
 
                     <!-- Campos só para SÉRIES: o site.js mostra/esconde conforme o Tipo, sem recarregar a página -->
                     <div id="camposSerie" data-max-episodios="@Filme.MaxEpisodiosPorSessao" class="col-12 @(Model.Tipo == TipoConteudo.Serie ? "" : "d-none")">

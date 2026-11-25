@@ -19,13 +19,13 @@ public class FilmesController : Controller
     {
         var consulta = _db.Filmes
             .AsNoTracking()
-            .Include(f => f.Categoria)
+            .Include(f => f.Categorias)
             .Include(f => f.Sessoes).ThenInclude(s => s.Reservas)
             .AsQueryable();
 
         // Os filtros de categoria e tipo são feitos na base de dados
         if (categoriaId is not null)
-            consulta = consulta.Where(f => f.CategoriaId == categoriaId);
+            consulta = consulta.Where(f => f.Categorias.Any(c => c.Id == categoriaId));
         if (tipo is not null)
             consulta = consulta.Where(f => f.Tipo == tipo);
 
@@ -56,7 +56,7 @@ public class FilmesController : Controller
     {
         var filme = await _db.Filmes
             .AsNoTracking()
-            .Include(f => f.Categoria)
+            .Include(f => f.Categorias)
             .Include(f => f.Sessoes).ThenInclude(s => s.Reservas)
             .FirstOrDefaultAsync(f => f.Id == id);
 

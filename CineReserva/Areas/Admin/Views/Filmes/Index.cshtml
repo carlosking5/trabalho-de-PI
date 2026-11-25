@@ -24,7 +24,7 @@ else
                     <th>Cartaz</th>
                     <th>Título</th>
                     <th>Tipo</th>
-                    <th>Categoria</th>
+                    <th>Categorias</th>
                     <th>Sessões</th>
                     <th class="text-end">Ações</th>
                 </tr>
@@ -42,7 +42,7 @@ else
                             }
                         </td>
                         <td>@f.Tipo.Nome()</td>
-                        <td>@f.Categoria?.Nome</td>
+                        <td>@f.NomesCategorias</td>
                         <td>@f.Sessoes.Count</td>
                         <td class="text-end text-nowrap">
                             <a asp-action="Detalhes" asp-route-id="@f.Id" class="btn btn-sm btn-outline-light" title="Ver"><i class="bi bi-eye"></i></a>
