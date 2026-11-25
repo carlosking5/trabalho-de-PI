@@ -1,0 +1,26 @@
+@model Reserva
+@{
+    ViewData["Title"] = "A aguardar pagamento";
+    var metodo = Model.MetodoPagamento!.Value;
+    var mensagem = metodo == MetodoPagamento.MbWay
+        ? "Confirme o pagamento na app MB WAY."
+        : "Confirme o pagamento na app do seu banco.";
+}
+
+<div class="container py-5 text-center" style="max-width: 560px">
+    <div class="painel py-5">
+        <div class="spinner-border text-warning mb-3" style="width: 3.5rem; height: 3.5rem" role="status" aria-hidden="true"></div>
+        <h1 class="h3 fw-bold">A aguardar pagamento</h1>
+        <p class="fs-5 mb-1" role="status"><i class="bi @metodo.Icone() text-dourado"></i> @mensagem</p>
+        <p class="text-secondary">@metodo.Nome() · @Model.Total.Euros() · @Model.Sessao!.Filme!.Titulo</p>
+
+        <div class="d-grid gap-2 mt-4">
+            <form asp-action="ConfirmarPagamento" asp-route-id="@Model.Id" method="post" class="d-grid">
+                <button type="submit" class="btn btn-cinema btn-lg"><i class="bi bi-check2-circle"></i> Já autorizei o pagamento</button>
+            </form>
+            <form asp-action="CancelarPagamento" asp-route-id="@Model.Id" method="post" class="d-grid">
+                <button type="submit" class="btn btn-outline-secondary">Cancelar pagamento</button>
+            </form>
+        </div>
+    </div>
+</div>

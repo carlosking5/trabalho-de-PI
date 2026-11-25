@@ -55,6 +55,11 @@ public class ValidarController : Controller
             vm.Valido = false;
             vm.Mensagem = "Esta reserva foi cancelada.";
         }
+        else if (reserva.EstadoPagamento != EstadoPagamento.Pago)
+        {
+            vm.Valido = false;
+            vm.Mensagem = "O pagamento desta reserva ainda não foi confirmado.";
+        }
         else if (reserva.Sessao!.DataHora.Date != DateTime.Today)
         {
             vm.Valido = false;

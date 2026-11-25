@@ -21,11 +21,11 @@ public class PainelController : Controller
         var amanha = hoje.AddDays(1);
         var agora = DateTime.Now;
 
-        // Reservas que contam como venda (as canceladas não contam)
+        // Reservas que contam como venda: só as PAGAS e não canceladas (as pendentes ainda não são faturadas)
         var vendas = await _db.Reservas
             .AsNoTracking()
             .Include(r => r.Sessao)
-            .Where(r => r.Estado != EstadoReserva.Cancelada)
+            .Where(r => r.EstadoPagamento == EstadoPagamento.Pago && r.Estado != EstadoReserva.Cancelada)
             .ToListAsync();
 
         var vm = new PainelViewModel

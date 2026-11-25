@@ -20,9 +20,10 @@ public class Sessao
     // ---- Propriedades calculadas (não são gravadas na base de dados) ----
     // Para funcionarem, as Reservas têm de ser carregadas com .Include(s => s.Reservas)
 
-    // Bilhetes vendidos = soma das quantidades das reservas que não foram canceladas
+    // Bilhetes vendidos = soma das quantidades das reservas PAGAS e não canceladas.
+    // As reservas com pagamento pendente não ocupam lugares.
     public int BilhetesVendidos => Reservas
-        .Where(r => r.Estado != EstadoReserva.Cancelada)
+        .Where(r => r.ContaComoVenda)
         .Sum(r => r.Quantidade);
 
     public int LugaresRestantes => Math.Max(0, Lotacao - BilhetesVendidos);

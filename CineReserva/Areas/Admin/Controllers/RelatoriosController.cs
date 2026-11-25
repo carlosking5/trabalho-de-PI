@@ -17,12 +17,12 @@ public class RelatoriosController : Controller
 
     public async Task<IActionResult> Index()
     {
-        // Só contam as reservas que não foram canceladas.
+        // Só contam as reservas PAGAS e não canceladas (as pendentes ainda não são faturadas).
         // As contas são feitas em C# (LINQ) porque o SQLite não sabe somar valores decimal.
         var vendas = await _db.Reservas
             .AsNoTracking()
             .Include(r => r.Sessao).ThenInclude(s => s!.Filme)
-            .Where(r => r.Estado != EstadoReserva.Cancelada)
+            .Where(r => r.EstadoPagamento == EstadoPagamento.Pago && r.Estado != EstadoReserva.Cancelada)
             .ToListAsync();
 
         var porDia = vendas

@@ -26,7 +26,8 @@
 
 <p class="small text-secondary">
     @Model.Reservas.Count reserva(s) ·
-    @Model.Reservas.Where(r => r.Estado != EstadoReserva.Cancelada).Sum(r => r.Quantidade) bilhete(s) válidos
+    @Model.Reservas.Where(r => r.ContaComoVenda).Sum(r => r.Quantidade) bilhete(s) pagos ·
+    @Model.Reservas.Count(r => r.EstadoPagamento == EstadoPagamento.Pendente && r.Estado != EstadoReserva.Cancelada) com pagamento pendente
 </p>
 
 <div class="table-responsive">
@@ -41,6 +42,7 @@
                 <th>Total</th>
                 <th>Reservado em</th>
                 <th>Estado</th>
+                <th>Pagamento</th>
             </tr>
         </thead>
         <tbody>
@@ -58,11 +60,18 @@
                     <td class="text-nowrap">@r.Total.Euros()</td>
                     <td class="text-nowrap small">@r.DataReserva.ToString("dd/MM/yyyy HH:mm")</td>
                     <td><span class="badge bg-@(r.Estado.Cor())">@r.Estado.Nome()</span></td>
+                    <td class="text-nowrap">
+                        <span class="badge bg-@(r.EstadoPagamento.Cor())">@r.EstadoPagamento.Nome()</span>
+                        @if (r.MetodoPagamento is MetodoPagamento metodo)
+                        {
+                            <div class="small text-secondary"><i class="bi @metodo.Icone()"></i> @metodo.Nome()</div>
+                        }
+                    </td>
                 </tr>
             }
             @if (Model.Reservas.Count == 0)
             {
-                <tr><td colspan="8" class="text-center text-secondary py-4">Nenhuma reserva encontrada.</td></tr>
+                <tr><td colspan="9"class="text-center text-secondary py-4">Nenhuma reserva encontrada.</td></tr>
             }
         </tbody>
     </table>

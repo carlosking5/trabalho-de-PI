@@ -107,6 +107,52 @@ document.addEventListener("DOMContentLoaded", function () {
         alternarCamposSerie(); // estado inicial (mantém as mensagens do servidor, se houver)
     }
 
+    // ---- 5. Ecrã de pagamento: mostrar os campos do método escolhido (Cartão / MB WAY) ----
+    const formPagamento = document.getElementById("formPagamento");
+    if (formPagamento) {
+        const grupos = {
+            Cartao: document.getElementById("camposCartao"),
+            MbWay: document.getElementById("camposMbWay")
+        };
+
+        // Campos dentro de um fieldset "disabled" não são enviados: só segue o método escolhido
+        function alternarMetodo() {
+            const escolhido = formPagamento.querySelector("[data-metodo]:checked");
+            Object.keys(grupos).forEach(function (nome) {
+                const ativo = escolhido && escolhido.value === nome;
+                grupos[nome].classList.toggle("d-none", !ativo);
+                grupos[nome].disabled = !ativo;
+            });
+        }
+        formPagamento.querySelectorAll("[data-metodo]").forEach(function (r) {
+            r.addEventListener("change", function () {
+                alternarMetodo();
+                const primeiro = grupos[r.value].querySelector("input");
+                if (primeiro) primeiro.focus();
+            });
+        });
+        alternarMetodo();
+
+        // Número do cartão em grupos de 4: "4111 1111 1111 1111"
+        const numero = formPagamento.querySelector('[data-formato="cartao"]');
+        if (numero) numero.addEventListener("input", function () {
+            const digitos = numero.value.replace(/\D/g, "").slice(0, 16);
+            numero.value = digitos.replace(/(\d{4})(?=\d)/g, "$1 ");
+        });
+
+        // Validade: escreve "0828" e fica "08/28"
+        const validade = formPagamento.querySelector('[data-formato="validade"]');
+        if (validade) validade.addEventListener("input", function (e) {
+            let d = validade.value.replace(/\D/g, "").slice(0, 4);
+            if (d.length > 2 || (d.length === 2 && e.inputType !== "deleteContentBackward")) d = d.slice(0, 2) + "/" + d.slice(2);
+            validade.value = d;
+        });
+
+        // CVV: só dígitos, no máximo 3
+        const cvv = document.getElementById("Cvv");
+        if (cvv) cvv.addEventListener("input", function () { cvv.value = cvv.value.replace(/\D/g, "").slice(0, 3); });
+    }
+
     // ---- 4. Pedir confirmação antes de apagar/cancelar ----
     document.querySelectorAll("form[data-confirmar]").forEach(function (form) {
         form.addEventListener("submit", function (e) {

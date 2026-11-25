@@ -1,0 +1,113 @@
+@model PagamentoViewModel
+@{
+    ViewData["Title"] = "Pagamento";
+    var r = Model.Reserva!;
+    var s = r.Sessao!;
+    var filme = s.Filme!;
+    var cartao = Model.Metodo == MetodoPagamento.Cartao;
+    var mbway = Model.Metodo == MetodoPagamento.MbWay;
+}
+
+<div class="container py-4" style="max-width: 900px">
+    <h1 class="titulo-seccao">Pagamento</h1>
+    <partial name="_Mensagens" />
+
+    <div class="row g-4">
+        <!-- Resumo da reserva -->
+        <div class="col-12 col-md-5 order-md-2">
+            <div class="painel">
+                <h2 class="h6 text-dourado text-uppercase mb-3">Resumo da reserva</h2>
+                <div class="d-flex gap-3 mb-3">
+                    <img src="@filme.CartazOuPadrao" alt="" class="rounded" style="width: 70px; aspect-ratio: 2/3; object-fit: cover" />
+                    <div>
+                        <div class="fw-bold">@filme.Titulo</div>
+                        @if (filme.DescricaoEpisodios is string episodios)
+                        {
+                            <div class="small"><i class="bi bi-collection-play text-dourado"></i> @episodios</div>
+                        }
+                        <div class="small"><i class="bi bi-calendar-event text-dourado"></i> @s.DataHora.DiaHora()</div>
+                    </div>
+                </div>
+                <dl class="row small mb-0">
+                    <dt class="col-7 fw-normal text-secondary">Bilhetes</dt><dd class="col-5 text-end">@r.Quantidade</dd>
+                    <dt class="col-7 fw-normal text-secondary">Preço por bilhete</dt><dd class="col-5 text-end">@s.Preco.Euros()</dd>
+                </dl>
+                <hr />
+                <div class="d-flex justify-content-between align-items-baseline">
+                    <span class="text-secondary">Total a pagar</span>
+                    <span class="total">@r.Total.Euros()</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Escolha do método e dados -->
+        <div class="col-12 col-md-7 order-md-1">
+            <form asp-action="Pagamento" asp-route-id="@Model.ReservaId" method="post" class="painel" id="formPagamento" novalidate>
+                <h2 class="h6 text-dourado text-uppercase mb-3">Como quer pagar?</h2>
+
+                <!-- Os dois métodos: o site.js mostra só os campos do método escolhido -->
+                <div class="row g-2 mb-1" role="radiogroup" aria-label="Método de pagamento">
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="Metodo" id="metodoCartao" value="@MetodoPagamento.Cartao" checked="@cartao" data-metodo />
+                        <label class="btn btn-outline-light w-100 py-3" for="metodoCartao"><i class="bi bi-credit-card fs-4 d-block"></i> Cartão</label>
+                    </div>
+                    <div class="col-6">
+                        <input type="radio" class="btn-check" name="Metodo" id="metodoMbWay" value="@MetodoPagamento.MbWay" checked="@mbway" data-metodo />
+                        <label class="btn btn-outline-light w-100 py-3" for="metodoMbWay"><i class="bi bi-phone fs-4 d-block"></i> MB WAY</label>
+                    </div>
+                </div>
+                <span asp-validation-for="Metodo" class="text-danger small d-block"></span>
+
+                <!-- MB WAY -->
+                <fieldset id="camposMbWay" class="mt-3 @(mbway ? "" : "d-none")" disabled="@(!mbway)">
+                    <label asp-for="Telemovel" class="form-label"></label>
+                    <div class="input-group">
+                        <span class="input-group-text">+351</span>
+                        <input asp-for="Telemovel" type="tel" inputmode="numeric" autocomplete="tel-national" maxlength="11"
+                               class="form-control" placeholder="912 345 678" />
+                    </div>
+                    <span asp-validation-for="Telemovel" class="text-danger small"></span>
+                </fieldset>
+
+                <!-- Cartão -->
+                <fieldset id="camposCartao" class="mt-3 @(cartao ? "" : "d-none")" disabled="@(!cartao)">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label asp-for="NomeCartao" class="form-label"></label>
+                            <input asp-for="NomeCartao" autocomplete="cc-name" maxlength="100" class="form-control" placeholder="Como aparece no cartão" />
+                            <span asp-validation-for="NomeCartao" class="text-danger small"></span>
+                        </div>
+                        <div class="col-12">
+                            <label asp-for="NumeroCartao" class="form-label"></label>
+                            <input asp-for="NumeroCartao" inputmode="numeric" autocomplete="cc-number" maxlength="19"
+                                   class="form-control" placeholder="0000 0000 0000 0000" data-formato="cartao" />
+                            <span asp-validation-for="NumeroCartao" class="text-danger small"></span>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="Validade" class="form-label"></label>
+                            <input asp-for="Validade" inputmode="numeric" autocomplete="cc-exp" maxlength="5"
+                                   class="form-control" placeholder="MM/AA" data-formato="validade" />
+                            <span asp-validation-for="Validade" class="text-danger small"></span>
+                        </div>
+                        <div class="col-6">
+                            <label asp-for="Cvv" class="form-label"></label>
+                            @* O CVV nunca é preenchido de volta pelo servidor *@
+                            <input id="Cvv" name="Cvv" type="password" inputmode="numeric" autocomplete="cc-csc" maxlength="3"
+                                   class="form-control" placeholder="123" value="" />
+                            <span asp-validation-for="Cvv" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="alert alert-secondary small mt-3 mb-0">
+                    <i class="bi bi-shield-lock"></i> Pagamento simulado. Os dados do cartão e o telemóvel não são guardados.
+                </div>
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="Index" class="btn btn-outline-secondary">Pagar mais tarde</a>
+                    <button type="submit" class="btn btn-cinema btn-lg"><i class="bi bi-lock"></i> Pagar @r.Total.Euros()</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -19,7 +19,9 @@
         }
         <div><i class="bi bi-calendar-event text-dourado"></i> <span class="text-capitalize">@s.DataHora.ToString("dddd, dd 'de' MMMM 'às' HH:mm")</span></div>
         <div><i class="bi bi-ticket-perforated text-dourado"></i> @Model.Quantidade bilhete(s)</div>
-        <div><i class="bi bi-cash text-dourado"></i> Total: <strong>@Model.Total.Euros()</strong></div>
+        <div><i class="bi bi-cash text-dourado"></i> Total: <strong>@Model.Total.Euros()</strong>
+            <span class="badge bg-success ms-1">Pago@(Model.MetodoPagamento is MetodoPagamento m ? $" com {m.Nome()}" : "")</span>
+        </div>
         <div class="small text-secondary mt-2">Lugares livres: sente-se onde quiser.</div>
     </div>
 

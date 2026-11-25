@@ -102,6 +102,12 @@ namespace CineReserva.Data.Migrations
                     b.Property<int>("Estado")
                         .HasColumnType("INTEGER");
 
+                    b.Property<int>("EstadoPagamento")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int?>("MetodoPagamento")
+                        .HasColumnType("INTEGER");
+
                     b.Property<int>("Quantidade")
                         .HasColumnType("INTEGER");
 

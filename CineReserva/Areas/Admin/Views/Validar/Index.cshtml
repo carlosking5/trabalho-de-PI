@@ -41,6 +41,7 @@
                     <dt class="col-4">Bilhetes</dt><dd class="col-8">@r.Quantidade</dd>
                     <dt class="col-4">Cliente</dt><dd class="col-8">@r.Utilizador?.Nome (@r.Utilizador?.Email)</dd>
                     <dt class="col-4">Estado</dt><dd class="col-8"><span class="badge bg-@(r.Estado.Cor())">@r.Estado.Nome()</span></dd>
+                    <dt class="col-4">Pagamento</dt><dd class="col-8"><span class="badge bg-@(r.EstadoPagamento.Cor())">@r.EstadoPagamento.Nome()</span></dd>
                 </dl>
             }
         </div>

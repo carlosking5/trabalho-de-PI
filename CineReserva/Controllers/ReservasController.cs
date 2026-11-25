@@ -53,15 +53,13 @@ public class ReservasController : Controller
         return View(new CriarReservaViewModel { SessaoId = sessaoId, Sessao = sessao });
     }
 
-    // POST /Reservas/Criar  ->  botão "Confirmar reserva"
+    // POST /Reservas/Criar  ->  botão "Pagar reserva"
+    // Cria a reserva com o pagamento PENDENTE e abre o ecrã de pagamento.
+    // Os lugares só ficam vendidos quando o pagamento for confirmado.
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Criar(CriarReservaViewModel vm)
     {
-        // A transação garante que dois clientes ao mesmo tempo não compram o último bilhete os dois
-        // (no SQLite, BeginTransaction bloqueia a escrita até ao Commit).
-        await using var transacao = await _db.Database.BeginTransactionAsync();
-
         var sessao = await CarregarSessao(vm.SessaoId);
         if (sessao is null) return NotFound();
 
@@ -94,25 +92,135 @@ public class ReservasController : Controller
             Quantidade = vm.Quantidade,
             Codigo = codigo,
             DataReserva = DateTime.Now,
-            Estado = EstadoReserva.Ativa
+            Estado = EstadoReserva.Ativa,
+            EstadoPagamento = EstadoPagamento.Pendente
         };
 
         _db.Reservas.Add(reserva);
         await _db.SaveChangesAsync();
-        await transacao.CommitAsync();
 
-        return RedirectToAction(nameof(Confirmacao), new { id = reserva.Id });
+        return RedirectToAction(nameof(Pagamento), new { id = reserva.Id });
     }
 
-    // /Reservas/Confirmacao/7  ->  mostra o código da reserva
+    // GET /Reservas/Pagamento/7  ->  escolher Cartão ou MB WAY, com o resumo e o total
+    public async Task<IActionResult> Pagamento(int id)
+    {
+        var reserva = await CarregarReserva(id);
+        if (reserva is null) return NotFound();
+
+        var desvio = DesvioSeNaoPodePagar(reserva);
+        if (desvio is not null) return desvio;
+
+        return View(new PagamentoViewModel
+        {
+            ReservaId = reserva.Id,
+            Metodo = reserva.MetodoPagamento, // se voltou do ecrã de espera, fica escolhido o mesmo método
+            Reserva = reserva
+        });
+    }
+
+    // POST /Reservas/Pagamento/7  ->  valida os dados e passa para o ecrã de espera
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Pagamento(int id, PagamentoViewModel vm)
+    {
+        var reserva = await CarregarReserva(id);
+        if (reserva is null) return NotFound();
+
+        var desvio = DesvioSeNaoPodePagar(reserva);
+        if (desvio is not null) return desvio;
+
+        if (!ModelState.IsValid)
+        {
+            vm.ReservaId = id;
+            vm.Reserva = reserva;
+            vm.Cvv = null;                  // por segurança o CVV nunca é devolvido à página
+            ModelState.Remove(nameof(vm.Cvv));
+            return View(vm);
+        }
+
+        // Grava SÓ o método. Os dados do cartão / telemóvel são descartados aqui.
+        reserva.MetodoPagamento = vm.Metodo;
+        await _db.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Aguardar), new { id });
+    }
+
+    // GET /Reservas/Aguardar/7  ->  "Confirme o pagamento na app ..."
+    public async Task<IActionResult> Aguardar(int id)
+    {
+        var reserva = await CarregarReserva(id);
+        if (reserva is null) return NotFound();
+
+        var desvio = DesvioSeNaoPodePagar(reserva);
+        if (desvio is not null) return desvio;
+
+        // Ainda não preencheu os dados de pagamento
+        if (reserva.MetodoPagamento is null) return RedirectToAction(nameof(Pagamento), new { id });
+
+        return View(reserva);
+    }
+
+    // POST /Reservas/ConfirmarPagamento/7  ->  botão "Já autorizei o pagamento"
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ConfirmarPagamento(int id)
+    {
+        // A transação garante que dois clientes ao mesmo tempo não ficam os dois com o último bilhete
+        // (no SQLite, BeginTransaction bloqueia a escrita até ao Commit).
+        await using var transacao = await _db.Database.BeginTransactionAsync();
+
+        var reserva = await _db.Reservas
+            .Include(r => r.Sessao).ThenInclude(s => s!.Reservas)
+            .FirstOrDefaultAsync(r => r.Id == id && r.UtilizadorId == UtilizadorId);
+        if (reserva is null) return NotFound();
+
+        var desvio = DesvioSeNaoPodePagar(reserva);
+        if (desvio is not null) return desvio;
+
+        if (reserva.MetodoPagamento is null) return RedirectToAction(nameof(Pagamento), new { id });
+
+        // As reservas pendentes não guardam lugar: confirma que ainda há bilhetes suficientes
+        if (reserva.Quantidade > reserva.Sessao!.LugaresRestantes)
+        {
+            TempData["Erro"] = reserva.Sessao.LugaresRestantes == 0
+                ? "Lamentamos: a sessão esgotou enquanto pagava. O pagamento não foi feito."
+                : $"Lamentamos: só restam {reserva.Sessao.LugaresRestantes} bilhetes. O pagamento não foi feito; cancele esta reserva e faça uma nova.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        reserva.EstadoPagamento = EstadoPagamento.Pago;
+        await _db.SaveChangesAsync();
+        await transacao.CommitAsync();
+
+        return RedirectToAction(nameof(Confirmacao), new { id });
+    }
+
+    // POST /Reservas/CancelarPagamento/7  ->  botão "Cancelar pagamento"
+    // A reserva continua PENDENTE e o cliente volta ao ecrã de pagamento.
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelarPagamento(int id)
+    {
+        var reserva = await CarregarReserva(id);
+        if (reserva is null) return NotFound();
+
+        var desvio = DesvioSeNaoPodePagar(reserva);
+        if (desvio is not null) return desvio;
+
+        TempData["Aviso"] = "Pagamento cancelado. A reserva continua pendente: pode pagar quando quiser.";
+        return RedirectToAction(nameof(Pagamento), new { id });
+    }
+
+    // /Reservas/Confirmacao/7  ->  o bilhete, com o código da reserva (só depois de pago)
     public async Task<IActionResult> Confirmacao(int id)
     {
-        var reserva = await _db.Reservas
-            .AsNoTracking()
-            .Include(r => r.Sessao).ThenInclude(s => s!.Filme)
-            .FirstOrDefaultAsync(r => r.Id == id && r.UtilizadorId == UtilizadorId);
-
+        var reserva = await CarregarReserva(id);
         if (reserva is null) return NotFound();
+
+        if (reserva.EstadoPagamento != EstadoPagamento.Pago)
+            return RedirectToAction(nameof(Pagamento), new { id });
+
         return View(reserva);
     }
 
@@ -134,6 +242,7 @@ public class ReservasController : Controller
         else
         {
             reserva.Estado = EstadoReserva.Cancelada;
+            reserva.EstadoPagamento = EstadoPagamento.Cancelado;
             await _db.SaveChangesAsync();
             TempData["Sucesso"] = $"A reserva {reserva.Codigo} foi cancelada.";
         }
@@ -142,6 +251,25 @@ public class ReservasController : Controller
     }
 
     // ----- Funções auxiliares -----
+
+    // Reserva do cliente com sessão e filme (outro cliente não consegue abrir: dá 404)
+    private Task<Reserva?> CarregarReserva(int id) => _db.Reservas
+        .Include(r => r.Sessao).ThenInclude(s => s!.Filme)
+        .FirstOrDefaultAsync(r => r.Id == id && r.UtilizadorId == UtilizadorId);
+
+    // Se a reserva já não puder ser paga, diz para onde mandar o cliente; senão devolve null
+    private IActionResult? DesvioSeNaoPodePagar(Reserva reserva)
+    {
+        if (reserva.PodePagar) return null;
+
+        if (reserva.EstadoPagamento == EstadoPagamento.Pago)
+            return RedirectToAction(nameof(Confirmacao), new { id = reserva.Id });
+
+        TempData["Erro"] = reserva.Estado == EstadoReserva.Cancelada
+            ? "Esta reserva foi cancelada."
+            : "Esta sessão já começou. Já não é possível pagar esta reserva.";
+        return RedirectToAction(nameof(Index));
+    }
 
     private Task<Sessao?> CarregarSessao(int id) => _db.Sessoes
         .Include(s => s.Filme).ThenInclude(f => f!.Categorias)

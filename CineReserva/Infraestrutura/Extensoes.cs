@@ -37,4 +37,19 @@ public static class Extensoes
         EstadoReserva.Usada => "secondary",
         _ => "danger"
     };
+
+    // Cor do badge de cada estado de pagamento
+    public static string Cor(this EstadoPagamento estado) => estado switch
+    {
+        EstadoPagamento.Pago => "success",
+        EstadoPagamento.Pendente => "warning text-dark",
+        _ => "danger"
+    };
+
+    // Ícone de cada método de pagamento
+    public static string Icone(this MetodoPagamento metodo) => metodo switch
+    {
+        MetodoPagamento.MbWay => "bi-phone",
+        _ => "bi-credit-card"
+    };
 }
