@@ -38,11 +38,14 @@ public static class Extensoes
         _ => "danger"
     };
 
-    // Cor do badge de cada estado de pagamento
+    // Cor do badge de cada estado de pagamento (usado como class="badge bg-...").
+    // "esgotado" e "expirado" são cores próprias definidas no site.css.
     public static string Cor(this EstadoPagamento estado) => estado switch
     {
         EstadoPagamento.Pago => "success",
         EstadoPagamento.Pendente => "warning text-dark",
+        EstadoPagamento.Esgotado => "esgotado",
+        EstadoPagamento.Expirado => "expirado",
         _ => "danger"
     };
 

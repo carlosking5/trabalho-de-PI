@@ -337,3 +337,16 @@ h1, h2, h3, .logo {
     }
     .banner { min-height: 340px; }
 }
+
+/* ---------- Estados de pagamento com cor própria ---------- */
+/* Esgotado: outro cliente pagou primeiro e os lugares acabaram */
+.badge.bg-esgotado {
+    background-color: #7e57c2;
+    color: #fff;
+}
+/* Expirado: passaram 10 minutos sem pagamento (aspeto "apagado") */
+.badge.bg-expirado {
+    background-color: transparent;
+    color: #adb5bd;
+    border: 1px dashed #adb5bd;
+}

@@ -1,5 +1,6 @@
 using CineReserva.Data;
 using CineReserva.Models;
+using CineReserva.Servicos;
 using CineReserva.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -18,6 +19,9 @@ public class ReservasController : Controller
     // /Admin/Reservas?filmeId=2&data=2026-11-24
     public async Task<IActionResult> Index(int? filmeId, DateTime? data)
     {
+        // Pendentes com mais de 10 minutos passam a Expirado antes de mostrar a lista
+        await RegrasReservas.ExpirarPendentesAsync(_db);
+
         var consulta = _db.Reservas
             .AsNoTracking()
             .Include(r => r.Utilizador)

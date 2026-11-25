@@ -43,7 +43,11 @@
         <!-- Escolha do método e dados -->
         <div class="col-12 col-md-7 order-md-1">
             <form asp-action="Pagamento" asp-route-id="@Model.ReservaId" method="post" class="painel" id="formPagamento" novalidate>
-                <h2 class="h6 text-dourado text-uppercase mb-3">Como quer pagar?</h2>
+                <h2 class="h6 text-dourado text-uppercase mb-2">Como quer pagar?</h2>
+                <p class="small text-secondary mb-3">
+                    <i class="bi bi-clock"></i> Tem até às <strong>@r.PagarAte.ToString("HH:mm")</strong> para pagar.
+                    Os lugares só ficam seus depois do pagamento confirmado.
+                </p>
 
                 <!-- Os dois métodos: o site.js mostra só os campos do método escolhido -->
                 <div class="row g-2 mb-1" role="radiogroup" aria-label="Método de pagamento">

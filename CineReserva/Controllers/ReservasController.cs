@@ -27,6 +27,8 @@ public class ReservasController : Controller
     // /Reservas  ->  "Minhas Reservas"
     public async Task<IActionResult> Index()
     {
+        await RegrasReservas.ExpirarPendentesAsync(_db);
+
         var reservas = await _db.Reservas
             .AsNoTracking()
             .Include(r => r.Sessao).ThenInclude(s => s!.Filme)
@@ -170,6 +172,8 @@ public class ReservasController : Controller
         // (no SQLite, BeginTransaction bloqueia a escrita até ao Commit).
         await using var transacao = await _db.Database.BeginTransactionAsync();
 
+        await RegrasReservas.ExpirarPendentesAsync(_db);
+
         var reserva = await _db.Reservas
             .Include(r => r.Sessao).ThenInclude(s => s!.Reservas)
             .FirstOrDefaultAsync(r => r.Id == id && r.UtilizadorId == UtilizadorId);
@@ -180,16 +184,23 @@ public class ReservasController : Controller
 
         if (reserva.MetodoPagamento is null) return RedirectToAction(nameof(Pagamento), new { id });
 
-        // As reservas pendentes não guardam lugar: confirma que ainda há bilhetes suficientes
+        // As pendentes não seguram lugar: verifica OUTRA VEZ se ainda há bilhetes suficientes.
+        // Se não houver, não confirma e a reserva passa a Esgotado.
         if (reserva.Quantidade > reserva.Sessao!.LugaresRestantes)
         {
-            TempData["Erro"] = reserva.Sessao.LugaresRestantes == 0
-                ? "Lamentamos: a sessão esgotou enquanto pagava. O pagamento não foi feito."
-                : $"Lamentamos: só restam {reserva.Sessao.LugaresRestantes} bilhetes. O pagamento não foi feito; cancele esta reserva e faça uma nova.";
+            reserva.EstadoPagamento = EstadoPagamento.Esgotado;
+            await _db.SaveChangesAsync();
+            await transacao.CommitAsync();
+
+            TempData["Erro"] = RegrasReservas.MensagemEsgotado;
             return RedirectToAction(nameof(Index));
         }
 
         reserva.EstadoPagamento = EstadoPagamento.Pago;
+
+        // As outras pendentes desta sessão que já não cabem nos lugares que sobram passam a Esgotado
+        RegrasReservas.MarcarPendentesSemLugar(reserva.Sessao);
+
         await _db.SaveChangesAsync();
         await transacao.CommitAsync();
 
@@ -229,13 +240,15 @@ public class ReservasController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancelar(int id)
     {
+        await RegrasReservas.ExpirarPendentesAsync(_db);
+
         var reserva = await _db.Reservas
             .Include(r => r.Sessao)
             .FirstOrDefaultAsync(r => r.Id == id && r.UtilizadorId == UtilizadorId);
 
         if (reserva is null) return NotFound();
 
-        if (reserva.Estado != EstadoReserva.Ativa || reserva.Sessao!.JaPassou)
+        if (!reserva.PodeCancelar)
         {
             TempData["Erro"] = "Esta reserva já não pode ser cancelada.";
         }
@@ -252,10 +265,15 @@ public class ReservasController : Controller
 
     // ----- Funções auxiliares -----
 
-    // Reserva do cliente com sessão e filme (outro cliente não consegue abrir: dá 404)
-    private Task<Reserva?> CarregarReserva(int id) => _db.Reservas
-        .Include(r => r.Sessao).ThenInclude(s => s!.Filme)
-        .FirstOrDefaultAsync(r => r.Id == id && r.UtilizadorId == UtilizadorId);
+    // Reserva do cliente com sessão e filme (outro cliente não consegue abrir: dá 404).
+    // Antes de a ler, passa a Expirado as pendentes com mais de 10 minutos.
+    private async Task<Reserva?> CarregarReserva(int id)
+    {
+        await RegrasReservas.ExpirarPendentesAsync(_db);
+        return await _db.Reservas
+            .Include(r => r.Sessao).ThenInclude(s => s!.Filme)
+            .FirstOrDefaultAsync(r => r.Id == id && r.UtilizadorId == UtilizadorId);
+    }
 
     // Se a reserva já não puder ser paga, diz para onde mandar o cliente; senão devolve null
     private IActionResult? DesvioSeNaoPodePagar(Reserva reserva)
@@ -265,9 +283,13 @@ public class ReservasController : Controller
         if (reserva.EstadoPagamento == EstadoPagamento.Pago)
             return RedirectToAction(nameof(Confirmacao), new { id = reserva.Id });
 
-        TempData["Erro"] = reserva.Estado == EstadoReserva.Cancelada
-            ? "Esta reserva foi cancelada."
-            : "Esta sessão já começou. Já não é possível pagar esta reserva.";
+        TempData["Erro"] = reserva switch
+        {
+            { Estado: EstadoReserva.Cancelada } => "Esta reserva foi cancelada.",
+            { EstadoPagamento: EstadoPagamento.Esgotado } => RegrasReservas.MensagemEsgotado,
+            { EstadoPagamento: EstadoPagamento.Expirado } or { PrazoTerminou: true } => RegrasReservas.MensagemExpirado,
+            _ => "Esta sessão já começou. Já não é possível pagar esta reserva."
+        };
         return RedirectToAction(nameof(Index));
     }
 

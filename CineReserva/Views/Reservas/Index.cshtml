@@ -50,7 +50,18 @@
                         }
                         else if (r.PodePagar)
                         {
-                            <div class="small text-secondary mt-2">O bilhete fica disponível depois de pagar. Os lugares não ficam guardados até lá.</div>
+                            <div class="small text-secondary mt-2">
+                                Pague até às <strong>@r.PagarAte.ToString("HH:mm")</strong>. O bilhete fica disponível depois de pagar;
+                                os lugares não ficam guardados até lá.
+                            </div>
+                        }
+                        else if (r.EstadoPagamento == EstadoPagamento.Esgotado)
+                        {
+                            <div class="small text-secondary mt-2">Os bilhetes esgotaram antes de o pagamento ser concluído. Não foi cobrado nada.</div>
+                        }
+                        else if (r.EstadoPagamento == EstadoPagamento.Expirado || r.PrazoTerminou)
+                        {
+                            <div class="small text-secondary mt-2">Passaram mais de 10 minutos sem pagamento. Não foi cobrado nada.</div>
                         }
 
                         <div class="d-flex flex-wrap gap-2 mt-2">
@@ -58,7 +69,7 @@
                             {
                                 <a asp-action="Pagamento" asp-route-id="@r.Id" class="btn btn-sm btn-cinema"><i class="bi bi-credit-card"></i> Pagar agora</a>
                             }
-                            @if (r.Estado == EstadoReserva.Ativa && !s.JaPassou)
+                            @if (r.PodeCancelar)
                             {
                                 <form asp-action="Cancelar" asp-route-id="@r.Id" method="post"
                                       data-confirmar="Tem a certeza que quer cancelar esta reserva?">
