@@ -61,3 +61,4 @@ Os testes xUnit verificam as migrações e a restrição de lugares em SQLite em
 A Fase 4 consolida o dashboard responsivo com secções por tipo de conteúdo, episódios recentes e páginas de ajuda e apresentação. A confirmação de email, a recuperação de palavra-passe, a edição de perfil, os favoritos persistentes, a reprodução, as reservas, as subscrições e as ferramentas de administração ainda estão pendentes.
 
 As seis imagens locais foram criadas com a ferramenta integrada ImageGen a partir de uma folha de contacto com cenas originais: astronauta junto a um eclipse, detetive numa Lisboa chuvosa, expedição na neve, duas mulheres num metro noturno, adolescente numa paisagem rural animada e piloto numa cabine espacial.
+ vida bosa
